@@ -1,0 +1,301 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Data;
+using System.Text.RegularExpressions;
+using ExportTemplate.Export.Util;
+using ExportTemplate.Export.Writer.Convertor;
+
+namespace ExportTemplate.Export.Entity
+{
+
+    /// <summary>
+    /// 填充区域规则
+    /// </summary>
+    public class Table : BaseEntity, ICloneable<Table>
+    {
+        public const int LIMITED_COLUMN_COUNT = 256;
+
+        private string _sourceName;
+        private new int _templeteRows = 1;
+        private int _rowNumIndex = -1;
+        private bool _autoFitHeight = false;
+        private bool[] _groupList = new bool[0];
+        protected List<int> _sumColumns = new List<int>();
+        protected List<Field> _fields = new List<Field>();
+
+        public Table(ProductRule productRule, BaseEntity container, Location location) : base(productRule, container, location) { }
+
+        /// <summary>
+        /// 原始Source字符串(可以是数据源名称，可以是表达式）
+        /// </summary>
+        public string SourceName
+        {
+            get { return _sourceName; }
+            set { _sourceName = value; }
+        }
+
+        /// <summary>
+        /// 模板行数（为扩展功能预留）
+        /// </summary>
+        public int TempleteRows
+        {
+            get { return _templeteRows; }
+            set { _templeteRows = value; }
+        }
+
+        /// <summary>
+        /// 行号位置(Excel索引号，不是数据中的位置)
+        /// </summary>
+        public int RowNumIndex
+        {
+            get { return _rowNumIndex; }
+            set { _rowNumIndex = value; }
+        }
+
+
+        /// <summary>
+        /// 是否自适应行高
+        /// </summary>
+        public bool AutoFitHeight
+        {
+            get { return _autoFitHeight; }
+            set { _autoFitHeight = value; }
+        }
+
+        public bool[] GroupList
+        {
+            get { return _groupList; }
+            set { _groupList = value; }
+        }
+
+        /// <summary>
+        /// 字段信息（只读）
+        /// </summary>
+        public List<Field> Fields
+        {
+            get { return new List<Field>(_fields); }
+        }
+
+        /// <summary>
+        /// 汇总行位置
+        /// </summary>
+        public LocationPolicy SumLocation = LocationPolicy.Tail;
+        /// <summary>
+        /// 汇总行在数据区域外部(head|tail|absolute)的偏移量
+        /// 汇总行只能在数据区域外，因此约定必须保证SumOffset>0
+        /// </summary>
+        public int SumOffset = -1;
+        /// <summary>
+        /// Excel汇总列号
+        /// </summary>
+        public List<int> SumColumns
+        {
+            get { return new List<int>(_sumColumns); }
+        }
+
+        /// <summary>
+        /// 调整SumOffset参数:将不合范围的偏移值进行调整
+        /// </summary>
+        /// <returns>调整状态：true,表示已调整;false,表示未调整</returns>
+        public bool AdjustSumOffset()
+        {
+            if (SumLocation == LocationPolicy.Undefined)
+                SumOffset = -1;
+            else if (SumLocation == LocationPolicy.Absolute && SumOffset < 0)
+                SumOffset = -1;
+            else if (SumLocation == LocationPolicy.Head && SumOffset >= 0)
+                SumOffset = -1;
+            else if (SumLocation == LocationPolicy.Tail && SumOffset <= 0)
+                SumOffset = 1;
+            else
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 添加汇总列
+        /// </summary>
+        /// <param name="colIndexes">列索引集合</param>
+        public void AddSumColumns(IEnumerable<int> colIndexes)
+        {
+            _sumColumns.AddRange(colIndexes);
+            _sumColumns = _sumColumns.Distinct().ToList();
+        }
+
+        /// <summary>
+        /// 添加汇总列
+        /// </summary>
+        /// <param name="columns">表示行的字符：包括字段名、行索引(0~255)、Excel列字母</param>
+        public void AddSumColumns(IEnumerable<string> columns)
+        {
+            int colIndex;
+            IList<string> fields = new List<string>();
+            IList<int> colIndexes = new List<int>();
+            IEnumerable<Field> tmpFieldList = null;
+            foreach (var column in columns)
+            {
+                tmpFieldList = _fields.Where(p => p.Name == column);
+                if (tmpFieldList.Count() > 0)
+                {
+                    colIndexes.Add(tmpFieldList.First().ColIndex);
+                }
+                else if (int.TryParse(column, out colIndex))
+                {
+                    colIndexes.Add(colIndex);
+                }
+                else if (ParseUtil.IsAlphabets(column, true))
+                {
+                    colIndex = ParseUtil.FromBase26(column);
+                    if (colIndex > 0 && colIndex < LIMITED_COLUMN_COUNT)
+                    {
+                        colIndexes.Add(colIndex - 1);
+                    }
+                }
+            }
+            AddSumColumns(colIndexes);
+        }
+
+        public void AddFields(IEnumerable<Field> fields)
+        {
+            foreach (var field in fields)
+            {
+                AddField(field);
+            }
+        }
+
+        public void AddField(Field field)
+        {
+            IEnumerable<Field> tmpFields = _fields.Where(p => p.Name == field.Name);
+            if (tmpFields.Count() > 0)
+            {
+                Field tmpField = tmpFields.First();
+                tmpField.ColIndex = field.ColIndex;
+                tmpField.ColSpan = field.ColSpan;
+                tmpField.DropDownListSource = field.DropDownListSource;
+                tmpField.Format = field.Format;
+                tmpField.RefColumn = field.Format;
+                tmpField.CommentColumn = field.CommentColumn;
+                tmpField.Spannable = field.Spannable;
+                tmpField.Type = field.Type;
+                if (tmpField.SumField && !field.SumField)
+                    _sumColumns.Remove(field.ColIndex);
+                else if (!tmpField.SumField && field.SumField)
+                    _sumColumns.Add(field.ColIndex);
+            }
+            else
+            {
+                _fields.Add(field);
+                if (field.SumField)
+                {
+                    _sumColumns.Add(field.ColIndex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置分组：数组个数表示分组级数，每个元素值表示是否显示分组行号
+        /// 分组只能是按字段顺序前几个字段
+        /// </summary>
+        /// <param name="groupList"></param>
+        public void SetGroup(bool[] groupList)
+        {
+            this._groupList = groupList ?? new bool[0];
+        }
+
+        /// <summary>
+        /// 计算区域字段顺序位置与填充区域
+        /// </summary>
+        public void CalculateArea()
+        {
+            int curIndex = _location.ColIndex;
+            curIndex += _location.ColIndex == this.RowNumIndex ? 1 : 0;
+            Field[] tmpFields;
+            foreach (var field in _fields)
+            {
+                if (curIndex == this.RowNumIndex)
+                {
+                    curIndex += 1;
+                }
+                //检测存在已设ColIndex的字段，并调整当前值
+                tmpFields = _fields.Where(p => p.ColIndex >= 0 && p.ColIndex <= curIndex && curIndex < p.ColIndex + p.ColSpan).ToArray();
+                if (tmpFields.Length > 0)
+                {
+                    curIndex = tmpFields.Max(p => p.ColIndex + p.ColSpan);
+                }
+                //未分配位置(ColSpan非无效值)
+                if (field.ColIndex < 0 && field.ColSpan > 0)
+                {
+                    field.ColIndex = curIndex;
+                    curIndex += field.ColSpan;
+                }
+            }
+            //设置默认值（超出范围的列将不输出）
+            if (_fields.Count > 0)
+            {
+                int maxIndex = _fields.Max(p => p.ColIndex + p.ColSpan);//_fields.Count = 0时报错!
+                _location.ColCount = _location.ColCount == 0 ? maxIndex - _location.ColIndex : _location.ColCount;
+            }
+            //对字段进行排序
+            _fields.Sort((f1, f2) => f1.ColIndex - f2.ColIndex);
+        }
+
+        public override bool Equals(object obj)
+        {
+            Table tb = obj as Table;
+            return tb != null && this._location.Equals(tb._location);
+        }
+
+        public override int GetHashCode()
+        {
+            return this._location.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return string.Format("<Table location=\"{0}\" source=\"{1}\"{3}>\t\n{2}\n</Table>", _location, /*Source != null ? Source.Name :*/ SourceName, string.Join("\t\n", _fields),
+                (_copyFill ? string.Format(" copyFill=\"{0}\"", _copyFill.ToString().ToLower()) : string.Empty) +
+                (RowNumIndex > -1 ? string.Format(" rowNumIndex=\"{0}\"", RowNumIndex) : string.Empty) +
+                (SumLocation != LocationPolicy.Undefined ? string.Format(" sumLocation=\"{0}\"", SumLocation.ToString().ToLower()) : string.Empty) +
+                (SumLocation != LocationPolicy.Undefined ? string.Format(" sumOffset=\"{0}\"", SumOffset) : string.Empty) +
+                (_sumColumns != null && _sumColumns.Count > 0 ? string.Format(" sumColumns=\"{0}\"", string.Join(",", _sumColumns.Select(p => p.ToString()).ToArray())) : string.Empty) +
+                (AutoFitHeight ? " autoFitHeight=\"true\"" : string.Empty) +
+                (_groupList.Length > 0 ? string.Format(" groupLevel=\"{0}\"", _groupList.Length) : string.Empty) +
+                (_groupList.Length > 0 ? string.Format(" sumColumns=\"{0}\"", string.Join(",", _groupList.Select(p => p.ToString()).ToArray())) : string.Empty) +
+                string.Empty
+            );
+        }
+
+
+        public override BaseEntity Clone(ProductRule productRule, BaseEntity container)
+        {
+            Table newTable = new Table(productRule, container, _location.Clone())
+            {
+                CopyFill = CopyFill,
+                //TempleteRows = TempleteRows,
+                AutoFitHeight = AutoFitHeight,
+                RowNumIndex = RowNumIndex,
+                SourceName = SourceName,
+                //_source = _source,
+                SumLocation = SumLocation,
+                SumOffset = SumOffset,
+                _sumColumns = new List<int>(_sumColumns)
+            };
+            //if (Source != null)
+            //{
+            //    newTable.Source = productRule.GetSource(Source.Name);
+            //}
+            newTable._fields = _fields.Clone(productRule, newTable);
+            return newTable;
+        }
+
+        public Table CloneEntity(ProductRule productRule, BaseEntity container)
+        {
+            return this.Clone(productRule, container) as Table;
+        }
+    }
+
+}

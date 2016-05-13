@@ -1,0 +1,514 @@
+<?xml version="1.0"?>
+<ExportConfig xmlns="http://tempuri.org/schema.xsd">
+  <ExportProduct name="Template" description="测试模板" template="ExcelTemplate\Template.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = Form
+      (1) TableName = Cells 单行数据
+          标题    单据样式（图片） 单据名称   单据编码  备注    约束说明
+          Title   FormStyle      FormName   FormCode Remark  Constrain 
+                  byte[]
+      (2) TableName = FromRule
+          大类        小类        单据数据项  是否保存  方式   来源单据   规则    算法
+          Category1   Category2  Item        Save     Way    Source    Rule    Algorithm
+      (3) TableName = BillList
+          引用表名   表单名称   表单编码  说明    约束
+          TableName  FormName   FormCode  Remark  Constrain
+      (4) TableName = SDPChange{数字}
+          列名称   列编码  类型     长度     键      必填    约束      备注     修改类型
+          ColName ColCode DataType  Length   IsKey   Require Constrain Remark  ChangeType
+                                    int      bool    bool
+    -->
+    <!-- 数据源定义 -->
+    <DataSource name="dsname">
+      <DataList name="SaveSource" value="√,"/>
+      <DataList name="WaySource" value="手工录入,自动产生,列表/弹出框选择"/>
+      <DataList name="Boolean" value="是,否"/>
+      <DataList name="DataRule" value="取,录,计算"/>
+      <DataList name="ChangeTypeSource" value="新增,修改,删除"/>
+      <TableSource name="Cells"/>
+      <TableSource name="SDPChange"/>
+      <TableSource name="FromRule" fields="Category1,Category2,Item,Save,Way,Source,Rule,Algorithm"></TableSource>
+    </DataSource>
+    <Sheets>
+      <Sheet name="来店登记">
+        <!-- 主数据项: TableName="Cells" -->
+        <Cells>
+          <Cell location="B2" source="Cells.Title" index="0"/>
+          <Cell location="C5:M18" source="Cells.FormStyle" />
+          <!--0是默认值-->
+          <!--<Cell location="C27" source="Cells.FormName" valueAppend="true" />
+          <Cell location="E27" source="Cells.FormCode" valueAppend="true" />
+          <Cell location="I27" source="Cells.Remark" valueAppend="true" />
+          <Cell location="C28" source="Cells.Constrain" valueAppend="true" />-->
+        </Cells>
+        <!-- 子数据项：TableName自定义 -->
+        <Tables>
+          <Table location="B23" source="FromRule">
+            <RowNum name="RowNum"></RowNum>
+            <Field name="Category1" colIndex="2" spannable="true"></Field>
+            <Field name="Category2" colIndex="3" spannable="true"></Field>
+            <Field name="Item" colIndex="4"  annnotationField="LinkAddr"
+                   refField="LinkAddr" linkType="auto"></Field>
+            <Field name="Save" colIndex="6" dropDownListSource="SaveSource" emptyFill="-"></Field>
+            <Field name="Way" colIndex="7" dropDownListSource="WaySource" emptyFill="-" spannable="true"></Field>
+            <Field name="Source" colIndex="8" emptyFill="-" ></Field>
+            <Field name="Rule" colIndex="10" emptyFill="-"></Field>
+            <Field name="Algorithm" colIndex="13" emptyFill="-"></Field>
+          </Table>
+          <Table location="B26" source="FromRule" rowNumIndex="1" groupLevel="2" groupNumShow="false,false">
+            <Field name="Category1"></Field>
+            <Field name="Category2"></Field>
+            <Field name="Item" colspan="2"  annnotationField="Annotation" 
+                   refField="LinkAddr" linkType="auto"></Field>
+            <Field name="Save" dropDownListSource="SaveSource"></Field>
+            <Field name="Way" dropDownListSource="WaySource"></Field>
+            <Field name="Source" colspan="2" ></Field>
+            <Field name="Rule" colspan="3"></Field>
+            <Field name="Algorithm" colspan="2"></Field>
+          </Table>
+          <!--<Table location="B30" source="SDPChange" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
+            <Field name="Length" type="Numeric"></Field>
+            <Field name="IsKey" type="Boolean"></Field>
+            <Field name="Required" type="Boolean"></Field>
+            <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
+          </Table>-->
+        </Tables>
+        <!-- 暂不支持与动态Sheet的兼容 -->
+        <DynamicAreas>
+          <!-- location必须是区域，不能只提供位置 -->
+          <DynamicArea location="B29:N33" source="BillList">
+            <Cells>
+              <!-- Cell必须在DynamicArea范围内,超出范围将被忽略 -->
+              <Cell location="C30" value="{FormName}" valueAppend="true" />
+              <Cell location="E30" value="{FormCode}" valueAppend="true" />
+              <Cell location="I30" value="{Remark}" valueAppend="true" />
+              <Cell location="C31" value="{Constrain}" valueAppend="true" />
+            </Cells>
+            <Tables>
+              <Table location="B33" source="{TableName}" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
+                <Field name="Length" type="numeric"></Field>
+                <Field name="IsKey" type="boolean"></Field>
+                <Field name="Required" type="boolean"></Field>
+                <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
+              </Table>
+            </Tables>
+          </DynamicArea>
+        </DynamicAreas>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="Form" description="表单" template="ExcelTemplate\Template_Form.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = Form
+      (1) TableName = Cells 单行数据
+          标题    单据样式（图片） 单据名称   单据编码  备注    约束说明
+          Title   FormStyle      FormName   FormCode Remark  Constrain 
+                  byte[]
+      (2) TableName = FromRule
+          大类        小类        单据数据项  是否保存  方式   来源单据   规则    算法
+          Category1   Category2  Item        Save     Way    Source    Rule    Algorithm
+      (3) TableName = SDPChange
+          列名称   列编码  类型     长度    键    必填    约束      备注     修改类型
+          ColName ColCode DataType Length IsKey Require Constrain Remark  ChangeType
+                                   int    bool  bool
+    -->
+    <!-- 数据源定义 -->
+    <DataSource name="dsname">
+      <DataList name="SaveSource" value="√,"/>
+      <DataList name="WaySource" value="手工录入,自动产生,列表/弹出框选择"/>
+      <DataList name="Boolean" value="是,否"/>
+      <DataList name="DataRule" value="取,录,计算"/>
+      <DataList name="ChangeTypeSource" value="新增,修改,删除"/>
+      <TableSource name="Cells"/>
+      <TableSource name="SDPChange"/>
+      <TableSource name="FromRule" fields="Category1,Category2,Item,Save,Way,Source,Rule,Algorithm"></TableSource>
+    </DataSource>
+    <Sheets>
+      <Sheet name="1、来店登记" nameRule="{Cells.Title}">
+        <!-- 主数据项: TableName="Cells" -->
+        <Cells>
+          <Cell location="B2" source="Cells.Title" index="0"/>
+          <Cell location="C5:M18" source="Cells.FormStyle" />
+          <!--0是默认值-->
+          <!--<Cell location="C27" source="Cells.FormName" valueAppend="true" />
+          <Cell location="E27" source="Cells.FormCode" valueAppend="true" />
+          <Cell location="I27" source="Cells.Remark" valueAppend="true" />
+          <Cell location="C28" source="Cells.Constrain" valueAppend="true" />-->
+        </Cells>
+        <!-- 子数据项：TableName自定义 -->
+        <Tables>
+          <Table location="B23" source="FromRule">
+            <RowNum name="RowNum"></RowNum>
+            <Field name="Category1" colIndex="2" spannable="true"></Field>
+            <Field name="Category2" colIndex="3" spannable="true"></Field>
+            <Field name="Item" colIndex="4"  annnotationField="LinkAddr"
+                   refField="LinkAddr" linkType="auto"></Field>
+            <Field name="Save" colIndex="6" dropDownListSource="SaveSource"></Field>
+            <Field name="Way" colIndex="7" dropDownListSource="WaySource"></Field>
+            <Field name="Source" colIndex="8" ></Field>
+            <Field name="Rule" colIndex="10" ></Field>
+            <Field name="Algorithm" colIndex="13" ></Field>
+          </Table>
+          <!--<Table location="B30" source="SDPChange" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
+            <Field name="Length" type="numeric"></Field>
+            <Field name="IsKey" type="boolean"></Field>
+            <Field name="Required" type="boolean"></Field>
+            <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
+          </Table>-->
+        </Tables>
+        <!-- 暂不支持与动态Sheet的兼容 -->
+        <DynamicAreas>
+          <!-- location必须是区域，不能只提供位置 -->
+          <DynamicArea location="B26:N30" source="BillList">
+            <Cells>
+              <!-- Cell必须在DynamicArea范围内,超出范围将被忽略 -->
+              <Cell location="C27" value="{FormName}" valueAppend="true" />
+              <Cell location="E27" value="{FormCode}" valueAppend="true" />
+              <Cell location="I27" value="{Remark}" valueAppend="true" />
+              <Cell location="C28" value="{Constrain}" valueAppend="true" />
+            </Cells>
+            <Tables>
+              <Table location="B30" source="{TableName}" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
+                <Field name="Length" type="numeric"></Field>
+                <Field name="IsKey" type="boolean"></Field>
+                <Field name="Required" type="boolean"></Field>
+                <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
+              </Table>
+            </Tables>
+          </DynamicArea>
+        </DynamicAreas>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="FunctionList" description="功能清单" template="ExcelTemplate\Template_FunctionList.xlsx">
+    <!--shrinkSheet="true" shrinkExSheets="封面,目录"-->
+    <!--  
+      DataSetName = FunctionList
+      (1) TableName = ModuleFuncListSource
+          模块   子模块     功能编码   功能名称  类别      功能说明      使用组织  应用配置     报表配置      备注
+          Module SubModule  FuncCode  FuncName FuncType  Description  UseOrg    AppConfig   ReptConfig    Remark
+      (2) TableName = InterfaceList
+          接口编号       接口名称      传输方式  传输时间  频次       传输方向       内容描述     数据源名称
+          InterfaceCode InterfaceName TransWay TransTime TransFreq TransDirection Description TableName
+      (3) TableName = {动态数据源，个数与名称取决于(2)中的数据源名称}
+          数据项名称 数据项编码 类型       长度   键   业务规则  默认值        备注
+          ItemName   ItemCode   ValueType  Length Key  BizRule   DefaultValue  Remark
+    -->
+    <!-- 数据源定义 -->
+    <DataSource name="dsname">
+      <DataList name="CheckedSource" value="√,"/>
+      <DataList name="BooleanSource" value="是,否"/>
+      <DataList name="FuncTypeSource" value="表单,报表,接口,后台"/>
+      <!--<DataList name="ValueTypeSource" value="文本,数字,日期,字节"/>-->
+      <DataList name="ValueTypeSource" field="Name" value="文本,数字,日期,字节流"/>
+      <DataList name="KeySource" value="主键,外键"/>
+    </DataSource>
+    <Sheets>
+      <Sheet name="1.0 功能统计表">
+        <Tables>
+          <Table location="B13" source="ModuleTable" fields="Module" sumLocation="tail" sumColumns="D" rowNumIndex="1"/>
+        </Tables>
+      </Sheet>
+      <Sheet name="1.1 功能清单">
+        <Tables>
+          <Table location="B6" source="ModuleFuncListSource" fields="Module,SubModule,FuncCode,FuncName,FuncType,Description,UseOrg,AppConfig,ReptConfig,Remark">
+            <RowNum index="1"/>
+            <Field name="AppConfig" dropDownListSource="CheckedSource"/>
+            <Field name="ReptConfig" dropDownListSource="CheckedSource"/>
+            <Field name="FuncType" dropDownListSource="FuncTypeSource.Value"/>
+          </Table>
+        </Tables>
+      </Sheet>
+      <Sheet name="2.0 接口清单">
+        <Tables>
+          <Table location="B3" source="InterfaceList" fields="InterfaceCode,InterfaceName,TransWay,TransTime,TransFreq,TransDirection,Description">
+            <RowNum />
+            <Field name="TransTime" type="datetime" format="hh:mm:ss"></Field>
+            <Field name="TransFreq" type="numeric" />
+          </Table>
+        </Tables>
+      </Sheet>
+      <!-- 固定输出 -->
+      <!--<Sheet name="2.1 xxxx接口数据项" dynamic="false" nameRule="{InterfaceList.InterfaceName}">
+        <Cells>
+          <Cell location="C2" source="InterfaceList.InterfaceName" index="2" valueAppend="true"/>
+        </Cells>
+        <Tables>
+          <Table location="C5" source="Table1" fields="ItemName,ItemCode,ValueType,Length,Key,BizRule,DefaultValue,Remark">
+            <RowNum />
+            <Field name="ValueType" type="Text" dropDownListSource="ValueTypeSource" />
+            <Field name="Length" type="Numeric" />
+            <Field name="Key" type="Text" dropDownListSource="KeySource"/>
+          </Table>
+        </Tables>
+      </Sheet>-->
+      <Sheet name="2.1 xxxx接口数据项" dynamic="true" source="InterfaceList" nameRule="2.{SheetNum} {InterfaceName}">
+        <Cells>
+          <Cell location="C2" value="{InterfaceCode}_{InterfaceName}数据项"/>
+        </Cells>
+        <Tables>
+          <Table location="C5" source="{TableName}" fields="ItemName,ItemCode,ValueType,Length,Key,BizRule,DefaultValue,Remark">
+            <RowNum />
+            <Field name="ValueType" type="text" dropDownListSource="ValueTypeSource" />
+            <Field name="Length" type="numeric" />
+            <Field name="Key" type="text" dropDownListSource="KeySource"/>
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="BusinessMainFlow" description="业务主流程" template="ExcelTemplate\Template_BusinessMainFlow.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = BusinessMainFlow
+      (1) TableName = Cells
+          流程图
+          FlowChart
+          byte[]
+      (2) TableName = NodeInfo
+          结点名称   组织名称  业务分类
+          NodeName  OrgName   BizCategory
+    -->
+    <!-- 数据源定义 -->
+    <DataSource name="dsname">
+    </DataSource>
+    <Sheets>
+      <Sheet name="Sheet1">
+        <Cells>
+          <Cell location="E5" source="Cells.FlowChart" index="0"/>
+        </Cells>
+        <Tables>
+          <Table location="B5" source="NodeInfo" fields="BizCategory,OrgName,NodeName">
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="BusinessCategory" description="业务分类" template="ExcelTemplate\Template_BusinessCategory.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = BusinessMainFlow
+      (1) TableName = BodySource
+          组织名称   业务分类           业务说明
+          OrgId     BizCategoryId      Description
+      (2) TableName = RowHeaderSource
+          组织ID  组织名称
+          OrgId   OrgName
+      (3) TableName = RowTreeSource
+          组织ID  组织名称  父级ID
+          OrgId   OrgName  OrgPid
+      (4) TableName = ColumnHeaderSource
+          业务分类ID      分类名称
+          BizCategoryId   BizCategoryName
+      (5) TableName = ColumnTreeSource
+          业务分类ID      分类名称         父级ID
+          BizCategoryId   BizCategoryName BizCategoryPid
+      (5) TableName = LeftUpperSource
+          业务类别名称
+          Name
+    -->
+    <DataSource name="dsname">
+    </DataSource>
+    <Sheets>
+      <Sheet name="Sheet1">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource.Description" emptyFill="-"></Region>
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:Organization"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"
+                  basedSource="true"></Region>
+            <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:BusinessCategory"
+                  treeSource="ColumnTreeSource.Category"
+                  treeInnerMapping="Category:ParentCategory"
+                  headerTreeMapping="BizCategory:Category"
+                  colSpannable="false" rowSpannable="true"
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+      <Sheet name="Sheet2">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource2"></Region>
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:"
+                  colSpannable="true" rowSpannable="false"></Region>-->
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+      <Sheet name="Sheet3">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource3"></Region>
+            <!--<Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:"                  
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>-->
+            <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:"
+                  treeSource="ColumnTreeSource.Category"
+                  treeInnerMapping="Category:ParentCategory"
+                  headerTreeMapping="BizCategory:Category"
+                  colSpannable="false" rowSpannable="true"
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+      <Sheet name="Sheet4">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource4"></Region>
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:"
+                  colSpannable="true" rowSpannable="false"></Region>-->
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:OrgName"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="Organization" description="组织结构" template="ExcelTemplate\Template_Organization.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = Organization
+      (1) TableName = Cells
+          组织结构图
+          OrgChart
+          byte[]
+      (2) TableName = OrganizationInfo
+          岗位名称   职责      职责详细描述         备注
+          PostName  PostReq   PostReqDescription  Remark
+    -->
+    <Sheets>
+      <Sheet name="Sheet1">
+        <Cells>
+          <Cell location="C6" source="Cells.OrgChart"/>
+        </Cells>
+        <Tables>
+          <Table location="F6" source="OrganizationInfo" fields="PostName,PostReq,PostReqDescription,Remark" autoFitHeight="true">
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="Report" description="报表" template="ExcelTemplate\Template_Report.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = Report
+      (1) TableName = Cells 单行数据
+          标题    单据样式（图片） 
+          Title   ReportStyle     
+                  byte[]
+      (2) TableName = ReportRule
+          报表名称     报表数据项  数据格式  是否查询   来源单据  来源数据项   算法      备注
+          ReportName   Item        DataType  Query     Source   SourceItem  Algorithm Remark
+    -->
+    <DataSource name="dsname">
+      <DataList name="CheckSource" value="√,"/>
+      <DataList name="DataTypeSource" value="文本,数字,日期"/>
+    </DataSource>
+    <Sheets>
+      <Sheet name="1.1 标准来店量分日统计报表">
+        <!-- 主数据项: TableName="Cells" -->
+        <Cells>
+          <Cell location="B2" source="Cells.Title"/>
+          <Cell location="B5:AK25" source="Cells.ReportStyle" />
+        </Cells>
+        <!-- 子数据项：TableName自定义 -->
+        <Tables>
+          <Table location="B29" source="ReportRule">
+            <RowNum />
+            <Field name="ReportName" colspan="3" spannable="true"></Field>
+            <Field name="Item" colspan="6"></Field>
+            <Field name="DataType" colspan="3" dropDownListSource="DataTypeSource"></Field>
+            <Field name="Query" colspan="2" dropDownListSource="CheckSource"></Field>
+            <Field name="Source" colspan="5" ></Field>
+            <Field name="SourceItem" colspan="4" ></Field>
+            <Field name="Algorithm" colspan="8" ></Field>
+            <Field name="Remark" colspan="6" ></Field>
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="3ConfigReq" description="三配置需求分析" template="ExcelTemplate\Template_3ConfigReq.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = 3ConfigReq
+      (1) TableName = AppConfigSource
+          平台	    模块	  流程名称	配置需求	 业务场景	用户配置方法	配置功能	  影响功能名称	影响范围说明	  备注
+          Platform  Module  FlowName  ConfigReq  BizScene ConfigMethod  ConfigFunc  EffectedFunc  EffectedRegion  Remark
+      (2) TableName = FlowConfigSource
+          平台	    模块	  流程名称	配置需求	 业务场景	配置方法	    备注
+          Platform  Module  FlowName  ConfigReq  BizScene ConfigMethod  Remark
+      (3) TableName = ReportConfigSource
+          平台	    模块	  报表名称	 报表说明	    配置需求	配置方法	    备注
+          Platform  Module  ReportName Description  ConfigReq ConfigMethod  Remark
+    -->
+    <DataSource name="3ConfigReq">
+      <DataList name="CheckSource" value="√,"/>
+      <DataList name="DataTypeSource" value="文本,数字,日期"/>
+    </DataSource>
+    <Sheets>
+      <Sheet name="应用配置">
+        <Tables>
+          <Table location="B6" source="AppConfigSource" fields="Platform,Module,FlowName,ConfigReq,BizScene,ConfigMethod,ConfigFunc,EffectedFunc,EffectedRegion,Remark">
+            <RowNum />
+          </Table>
+        </Tables>
+      </Sheet>
+      <Sheet name="报表配置">
+        <Tables>
+          <Table location="B6" source="FlowConfigSource" fields="Platform,Module,FlowName,ConfigReq,BizScene,ConfigMethod,Remark">
+            <RowNum />
+          </Table>
+        </Tables>
+      </Sheet>
+      <Sheet name="流程配置">
+        <Tables>
+          <Table location="B6" source="ReportConfigSource" fields="Platform,Module,ReportName,Description,ConfigReq,ConfigMethod,Remark">
+            <RowNum />
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="4Line3Config" description="四线三配置" template="ExcelTemplate\Template_4Line3Config.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = 4Line3Config
+      (1) TableName = Cells 单行数据
+          标题
+          Title  
+      (2) TableName = 4Line3ConfigSource
+          流程名称	工作流程	节点	功能	   组织	        输入单据	加工步骤	规则算法	输出单据	线上线下	所需基础数据	依据标准	监控点	监控规则	  监控方式	  升级规则	 升级方式	 监控报表	      进度报表	     质量报表	     同比环比报表	综合报表	    共享内容	共享方式	共享对象	   应用配置	 流程配置   报表名称	报表配置	
+          FlowName  WorkFlow  Node  Function Organization Input     Process   Rule      Output    OnOffLine ReqBasicData  Standard  Monitor MonitorRule MonitorWay  UpdateRule UpdateWay MonitorReport  ScheduleReport QualityReport Rate         GeneralReport Shared    ShareWay  SharedObject AppConfig FlowConfig ReportName ReportConfig
+    -->
+    <DataSource name="4Line3Config">
+    </DataSource>
+    <Sheets>
+      <Sheet name="四线三配置分析">
+        <Cells>
+          <Cell location="B1" source="Cells.Title"/>
+        </Cells>
+        <Tables>
+          <Table location="B5" source="4Line3ConfigSource" fields="FlowName,WorkFlow,Node,Function,Organization,Input,Process,Rule,Output,OnOffLine,ReqBasicData,Standard,Monitor,MonitorRule,MonitorWay,UpdateRule,UpdateWay,MonitorReport,ScheduleReport,QualityReport,Rate,GeneralReport,Shared,ShareWay,SharedObject,AppConfig,FlowConfig,ReportName,ReportConfig">
+            <RowNum />
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+</ExportConfig>

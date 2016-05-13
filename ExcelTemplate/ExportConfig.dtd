@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE ExportConfig [
+<!ELEMENT ExportConfig (ExportProduct+)>
+<!ELEMENT ExportProduct (DataSource?,Sheets)>
+<!ATTLIST ExportProduct name CDATA #REQUIRED
+  templete CDATA "">
+<!-- DataSource定义 -->
+<!ELEMENT DataSource (DataList*,TableSource*)>
+<!ATTLIST DataSource name CDATA "">
+<!ELEMENT DataList EMPTY>
+<!ATTLIST DataList name CDATA #REQUIRED 
+  source CDATA ""
+  value CDATA "">
+<!ELEMENT TableSource ANY>
+<!ATTLIST TableSource name CDATA #REQUIRED>
+<!-- Sheet定义 -->
+<!ELEMENT Sheets (Sheet*)>
+<!ELEMENT Sheet (Cells?,Tables)>
+<!ATTLIST Sheet name CDATA #REQUIRED 
+  dynamic (true|false) "false"
+  source CDATA ""
+  nameRule CDATA "">
+<!-- 主数据项输出定义 -->
+<!ELEMENT Cells (Cell*)>
+<!ELEMENT Cell EMPTY>
+<!ATTLIST Cell location CDATA #REQUIRED>
+<!ATTLIST Cell source CDATA "">
+<!ATTLIST Cell index CDATA "1">
+<!ATTLIST Cell valueAppend  (True | False) "False">
+
+<!-- Table数据项输出定义 -->
+<!ELEMENT Tables (Table*,HeaderTable*)>
+<!ELEMENT Table (RowNum,Field)>
+<!ATTLIST Table location CDATA #REQUIRED
+  source CDATA #REQUIRED
+  copyFill (True|False) "False"
+  fields CDATA ""
+  sumLocation (head|tail|absolute) "tail"
+  sumOffset CDATA ""
+  sumColumns CDATA "">
+<!ELEMENT RowNum EMPTY>
+<!ATTLIST RowNum index CDATA "0">
+<!ELEMENT Field EMPTY>
+<!ATTLIST Field name CDATA #REQUIRED
+  colIndex CDATA ""
+  type (Numeric|DateTime|String|Formula|Boolean|Picture) "String"
+  format CDATA ""
+  annnotationField CDATA ""
+  linkType (auto|document|url|email|file) "auto"
+  refField CDATA ""
+  dropDownListSource CDATA ""
+  spanable (true|false) "false"
+  spanable CDATA "1"
+  sumfield (true|false) "false"
+  emptyFill CDATA "">
+
+<!-- 多行多列标题输出定义 -->
+<!ELEMENT HeaderTable (Region)>
+<!ATTLIST HeaderTable location CDATA #REQUIRED
+  freeze (true|false) "false">
+<!ELEMENT Region EMPTY>
+<!ATTLIST Region type (body|rowheader|columnheader|corner) #REQUIRED
+  source CDATA #REQUIRED
+  emptyFill CDATA ""
+  IdField CDATA ""
+  parentField CDATA ""
+  maxLevel CDATA ""
+  colSpannable (true|false) "true"
+  rowSpannable (true|false) "true"
+  basedOn (true|false) "true"
+  spanRule (row|column|one|all) "column">
+]>

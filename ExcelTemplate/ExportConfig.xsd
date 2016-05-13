@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ExportConfig"
+    targetNamespace="http://tempuri.org/schema.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://tempuri.org/schema.xsd"
+    xmlns:mstns="http://tempuri.org/schema.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+<!--  
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"  #表示数据类型等定义来自w3
+    targetNamespace="http://www.w3schools.com"          #表示文档中要定义的元素来自什么命名空间
+    xmlns="http://www.w3schools.com"                    #表示此文档的默认命名空间是什么
+    elementFormDefault="qualified">                     #表示要求xml文档的每一个元素都要有命名空间指定
+</xs:schema>
+-->
+  <!-- 数据类型定义 -->
+  <xs:simpleType name="picSize">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="origin|scale|stretch"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="location">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[a-zA-Z]+[1-9][0-9]*(:[a-zA-Z]+[1-9][0-9]*)?" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="region">
+    <!--<xs:restriction base="xs:string">
+      <xs:enumeration value="body"/>
+      <xs:enumeration value="rowheader"/>
+      <xs:enumeration value="columnheader"/>
+      <xs:enumeration value="corner"/>
+    </xs:restriction>-->
+    <xs:restriction base="xs:string">
+      <xs:pattern value="body|rowheader|columnheader|corner"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="exportValue">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="numeric|datetime|text|formula|boolean|picture"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="link">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="auto|document|url|email|file"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="column">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[0-9]+|[A-Za-z]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="sumpolicy">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="head|tail|absolute"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="groupShowType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="(true|false)(,(true|false))*"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tableAndField">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\w+\.\w+"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="tableOrField">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="\w+(\.\w+)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <!-- 组属性定义，未要求以组出现 -->
+  <xs:attributeGroup name="shrink">
+    <xs:attribute name="shrinkSheet" type="xs:boolean" default="false" />
+    <xs:attribute name="shrinkExSheets" type="xs:string" />
+  </xs:attributeGroup>
+  
+  <!-- 共有元素定义：Cells -->
+  <xs:element name="Cells">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Cell" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:attribute name="location" type="xs:string" use="required" />
+            <xs:attribute name="source" type="xs:string" />
+            <xs:attribute name="index" type="xs:integer" default="0" />
+            <xs:attribute name="value" type="xs:string" />
+            <xs:attribute name="valueAppend" type="xs:boolean" default="false" />
+            <xs:attribute name="fill" type="picSize" default="origin"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <!-- 共有元素定义：Tables -->
+  <xs:element name="Tables">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="HeaderTable" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Region" minOccurs="1" maxOccurs="4">
+                <xs:complexType>
+                  <xs:attribute name="type" type="region" use="required" />
+                  <xs:attribute name="source" type="xs:string" use="required" />
+                  <xs:attribute name="emptyFill" type="xs:string" />
+                  <xs:attribute name="headerBodyMaping" type="xs:string" />
+                  <xs:attribute name="treeSource" type="xs:string" />
+                  <xs:attribute name="treeInnerMapping" type="xs:string" />
+                  <xs:attribute name="headerTreeMapping" type="xs:string" />
+                  <xs:attribute name="maxLevel"  type="xs:integer" />
+                  <xs:attribute name="colSpannable" type="xs:boolean" />
+                  <xs:attribute name="rowSpannable" type="xs:boolean" />
+                  <xs:attribute name="basedSource" type="xs:boolean" />
+                  <xs:attribute name="spanRule" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="location" type="location" use="required" />
+            <xs:attribute name="freeze" type="xs:boolean" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element name="Table" minOccurs="0" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="RowNum" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="index" type="xs:integer" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Field" minOccurs="0" maxOccurs="unbounded">
+                <xs:complexType>
+                  <xs:attribute name="name" type="xs:string" />
+                  <xs:attribute name="colIndex" type="column" />
+                  <xs:attribute name="type" type="exportValue" default="text" />
+                  <xs:attribute name="format" type="xs:string" />
+                  <xs:attribute name="annnotationField" type="xs:string" />
+                  <xs:attribute name="refField" type="xs:string" />
+                  <xs:attribute name="linkType" type="link" />
+                  <xs:attribute name="dropDownListSource" type="tableOrField" />
+                  <xs:attribute name="emptyFill" type="xs:string" />
+                  <xs:attribute name="colspan" type="xs:integer" />
+                  <xs:attribute name="spannable" type="xs:boolean" default="false" />
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="location" type="location" use="required" />
+            <xs:attribute name="source" type="xs:string" use="required" />
+            <xs:attribute name="rowNumIndex" type="column" />
+            <xs:attribute name="fields" type="xs:string" />
+            <xs:attribute name="sumLocation" type="sumpolicy" />
+            <xs:attribute name="sumOffset" type="xs:integer" />
+            <xs:attribute name="sumColumns" type="xs:string" /><!-- 支持类型较复杂 -->
+            <xs:attribute name="autoFitHeight" type="xs:boolean" />
+            <xs:attribute name="copyFill" type="xs:boolean" />
+            <xs:attribute name="groupLevel" type="xs:integer"/>
+            <xs:attribute name="groupNumShow" type="groupShowType"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <!-- 定义根元素ExportConfig -->
+  <xs:element name="ExportConfig">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ExportProduct" minOccurs="1" maxOccurs="unbounded">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="DataSource" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="DataList" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="value" type="xs:string" />
+                        <xs:attribute name="field" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                    <xs:element name="TableSource" minOccurs="0" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:attribute name="name" type="xs:string" />
+                        <xs:attribute name="fields" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                  <xs:attribute name="name" type="xs:string" />
+                </xs:complexType>
+              </xs:element>
+              <xs:element name="Sheets" minOccurs="0" maxOccurs="1">
+                <xs:complexType>
+                  <xs:sequence>
+                    <xs:element name="Sheet" minOccurs="1" maxOccurs="unbounded">
+                      <xs:complexType>
+                        <xs:sequence>
+                          <xs:element ref="Cells" minOccurs="0" maxOccurs="1"/>
+                          <xs:element ref="Tables"  minOccurs="0" maxOccurs="1"/>
+                          <xs:element name="DynamicAreas" minOccurs="0" maxOccurs="1">
+                            <xs:complexType>
+                              <xs:sequence>
+                                <xs:element name="DynamicArea" minOccurs="1" maxOccurs="unbounded">
+                                  <xs:complexType>
+                                    <xs:sequence>
+                                      <xs:element ref="Cells" minOccurs="0" maxOccurs="1" />
+                                      <xs:element ref="Tables" minOccurs="0" maxOccurs="1" />
+                                    </xs:sequence>
+                                    <xs:attribute name="location" type="location" use="required" />
+                                    <xs:attribute name="source" type="xs:string" use="required" />
+                                  </xs:complexType>
+                                </xs:element>
+                              </xs:sequence>
+                            </xs:complexType>
+                          </xs:element>
+                        </xs:sequence>
+                        <xs:attribute name="name" type="xs:string" use="required" />
+                        <xs:attribute name="dynamic" type="xs:boolean" default="false" />
+                        <xs:attribute name="source" type="xs:string" />
+                        <xs:attribute name="nameRule" type="xs:string" />
+                      </xs:complexType>
+                    </xs:element>
+                  </xs:sequence>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="name" type="xs:string" use="required" />
+            <xs:attribute name="description" type="xs:string" />
+            <xs:attribute name="template" type="xs:string" />
+            <xs:attribute name="export" type="xs:string" />
+            <xs:attributeGroup ref="shrink" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

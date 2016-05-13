@@ -1,0 +1,286 @@
+<!--  
+    【数据源要求】
+    1、程序只需提供一个DataSet对象，DataSetName与ExportProduct的name属性保持一致
+    2、DataSet中包含的多个DataTable，DataTable的TableName要与“XML导出规则引用数据源名称”一致
+    3、DataTable中包含的字段名称要与“XML导出规则中显示指定字段名”一致
+    4、“XML导出规则中引用数据源名称”（TableName）在Cell/Table/Region等元素的source属性中指定
+    5、“XML导出规则中引用的字段名”（ColumnName）在Field元素的name、annnotationField、refField中指定，以及在上述source属性中指定（字段名以"."与数据源名称分隔）
+    6、说明：多余数据表、数据列将被忽略，缺失的数据表数据列将不作处理
+    7、数据源数据类型：
+     [Excel输出类型]   数字     日期       字符串   公式    Bool    图片
+     [数据源类型]      (常用)   DateTime  string   string  bool    byte[]
+     (1) 数字支持类型包括int,double,float等
+    【XML配置要求】
+    1、数据源名称作为同一产出物的唯一性标识。数据源可以多处使用，但一定保证类型一致，如TreeSource与DataList是不能通用的
+  -->
+
+<ExportConfig>
+  <!-- ************************* 元素说明 *********************** -->
+  <!-- ExportProduct产出物导出规则 -->
+  <!--
+    name 任意指定产出物名称(要求不允许重复)
+    templete 指定导出时使用的Excel模板
+  -->  
+  <ExportProduct name="[产出物名称]" templete="[excel模板名称]" shrinkSheet="false|true" shrinkExSheets="[sheet列表]">
+    <!-- 数据源定义：必须提供的数据源和指定的数据源 -->
+    <!-- 
+      属性name(可选) 
+      说明：
+      1、DataSource下声明数据源，数据源名称在同一导出规则中必须唯一，可在后面的Sheets元素中使用
+      2、DataSource目前只支持DataList（DataTable原设计用于数据类型映射与字段选择）
+      3、DataSource中定义的数据源，分为“固定数据源”和“动态数据源”。
+          固定数据源是在XML指定数据，动态数据源是需要程序提供的DataSet必须有的数据源
+    -->
+    <DataSource name="dsname">
+      <!-- DataList下拉框数据源 -->
+      <!-- 
+        name 数据源名称，在一个导出规则中名称唯一（即导出一个Excel文档时所有数据源中唯一）
+        value 固定数据源,多值之间用逗号分隔
+        source 动态数据源，需要程序提供的“DataTable名称”和“字段名称”
+      -->
+      <DataList name="[下拉框数据源]" source="[tablename].[fieldname]" value="[以逗号分隔值]"/>
+      <!-- DataTable数据源(暂不支持） -->
+      <!-- 
+        【设计思路（未实现）】
+        1、可定义“固定数据源”和绑定“动态数据源” 
+        2、从动态数据源选取需要字段，并指定字段目标输出类型
+      -->
+      <DataTable name="[tablename]" fields="field1,field2,field3...">
+        <!-- 字段属性 -->
+        <Field name="[字段名]" order="[用于排序的数字]"
+              type="Numeric|DateTime|Text|Formula|图片">
+        </Field>
+        <Field name="[字段名]"></Field>
+      </DataTable>
+    </DataSource>
+    <!-- 填充表单 -->
+    <Sheets>
+      <!-- Sheet元素对应Excel模板的一个Sheet -->
+      <!-- 
+        name 指定Excel模板的一个Sheet名称
+        dynamic 标识是直接使用此Sheet模板，还是根据数据源动态创建多个Sheet
+        source  动态Sheet的数据源
+        nameRule 指定动态创建Sheet时Sheet名称规则，表达式支持对字段引用和SheetNum、SheetIndex等内置参数; 
+                 如非动态，可使用 "xxx{Table.Field}xxx"对Sheet更名。
+      -->
+      <Sheet name="[Excel表单名称]" dynamic="true|false(默认)" source="{tablename}" nameRule="XXX{fieldname}XXX">
+        <!-- 孤立数据项输出规则 -->
+        <Cells>
+          <!-- Cell元素表示一个主数据项 -->
+          <!-- 【Cell应用场景】 
+            1、输出单项值 location source index（可选）
+            2、输出图片
+            3、在动态Sheet下对数据源中某字段值的引用（跟当前Sheet名称引用的数据在同一行）
+          -->
+          <!-- 【Cell属性说明】
+            location     指示Excel模板位置或区域，一般区域用于图片输出，值输出只需指定位置
+            source       数据源，指定此单元格输出值(数据项)取自什么数据源什么字段
+            index(可选，默认值0) 数据项来自数据源哪一行，默认取第一行
+            valueAppend(可选，默认false) 是否在单元格值后缀加指定的数据项
+            value(可选) 用模板方式输出：从动态Sheet数据源中取某字段值，字段名用大括号"{fieldname}"
+          -->
+          <Cell location="[A1] | [A1:C4]" source="[tablename.fieldname]" index="0" valueAppend="true" value="XXX_{fieldname}_XXX" />
+        </Cells>
+        <!-- 数据集合区域输出规则 -->
+        <Tables>
+          <!-- 区域填充规则：指定填充区域位置、引用数据源、字段顺序 -->
+          <!--
+            location 位置或区域
+            source 数据据源名称，引用动态Sheet数据源的字段解析值作为数据源名称时,需用大括号包围字段名,如"{TableName}"
+            fields 字段序列，指定了需要输出的字段以及字段的输出顺序
+            copyFill(默认true) true表示以复制模板行形式填充，false表示直接写入数据源不增加行
+            rowNumIndex(可选) 显示行号并指定行号在Excel模板输出列位置(与元素<RowNum>相同），默认值0
+            sumLocation 汇总行的位置策略，与sumOffset连用，有head/tail/absolute三种方式分别表示区域的首部相对位置、尾部相对位置、绝对位置
+            sumOffset 当sumLocation是相对位置时，表示数据区域之外的行偏移量；当是绝对位置时，表示Excel模板中的行索引
+            sumColumns 指定需要汇总列（可用数字或字母表示列索引号）、汇总字段（数据源字段）
+            autoFitHeight 是否自适应行高
+            groupLevel 分组级别，按字段先后顺序截取的个数表示分组级别
+            groupNumShow 以逗号分隔指定每一级分组的组号显示情况，如三级分组只显示最后一级分组时指定"false,false,true",默认值"false,false,false"
+          -->
+          <Table location="C8:K11" source="[tablename]" fields="RowNum,FormNo,FormName,Remark"  autoFitHeight="false|true">
+            <!-- 内置行号字段: 输出行号 -->
+            <!--
+             index(可选) 默认值区域首列
+            -->
+            <RowNum name="RowNum"></RowNum>
+            <Field name=""></Field>
+          </Table>
+          <Table location="C8" source="[tablename]" copyFill="true|false" 
+                 fields="field1,field2,field3,..."
+                 sumLocation="head|tail|absolute" sumOffset="[数字]" 
+                 sumColumns="[field1,field2,field3,...]|[col1,col2,col3,...A~IU]|[Num1,Num2,Num3,...0~255](超出范围将忽略)">
+            <!-- 内置行号字段:默认第一列，可用index指定顺序 -->
+            <RowNum />
+            <!-- 字段属性 -->
+            <!--
+              name 数据源字段名
+              colIndex [Excel列]支持数字和字母：指定数据索引从0开始，指定字母从A开始
+              type 数据类型，包括Numeric/DateTime/String/Formula/Boolean/Picture
+              format 指定日期、数字等需要指定特殊的格式，如
+              annnotationField 指定批注数据引用的字段名
+              linkType  链接类型：auto|document|url|email|file
+              refField  链接路径信息引用的字段名
+              dropDownListSource 引用的数据源名称，可从DataList元素名称，也可指定动态数据源"tablename.field"
+              spanable(可选) 字段所属列是否根据内容合并
+              colspan(可选) 单元格列合个数](默认值1不合并)，在Excel模板已合并行可不指定此属性
+              sumfield(可选) 是否属于汇总字段,如在Table的sumColumns指定可不指定
+              emptyFill 空值填充字符
+            -->
+            <Field name="[数据源字段名]"
+                  colIndex="[Excel列号](数字从0开始，字母从A开始)"
+                  type="Numeric|DateTime|Text|Formula|Boolean|Picture"
+                  format="日期、数据等需要指定特殊的格式"
+                  annnotationField="[批注数据引用的列名]"
+                  linkType="auto|document|url|email|file"
+                  refField="[引用其它字段，如链接类型数据需要额外的路径信息]"
+                  dropDownListSource="[ListSource]"
+                  spanable="true|false (列是否根据内容合并)"
+                  colspan="[合并列数](默认值1,可根据相邻行号计算)"
+                  sumfield="true|false(是否汇总列)"
+                  emptyFill="[任意字符]"/>
+          </Table>
+          
+          <!--<HeaderTable location="B3" freeze="true">-->
+            <!-- 【多行多列标题带处理功能】
+              (1) 主体区域：type="body"，refRowHeader表示与行标题区域（type="row"）数据源字段的引用关系
+                                 refColHeader表示引用行标题区域（type="column"）数据源的字段
+                                 body区域的输出每个单元位置取决于这些引用字段在原数据源中的位置
+              (2) 行标题或列标题区域：type="rowheader|columnheader"。
+              (3) source="[tablename].[field]"时表示输出单元格值只取决于一个字段
+                  source="[tablename]"表示输出单元格值只取决于所有字段（与Table元素输出相同）
+              (4) 对于多级行(列)标题需要指定 parentField="[parentId]"表示数据源是树状结构
+                  对于行标题,用于多级行标题，多少级取决于树的深度，可人为限制输出标题最大级数(maxLevel)。
+                      如不指定maxLevel，标题层级将取决于（输出最底一级）结点的最大深度。（输出取决于body，还是取决于标题？）
+                      输出层（输出最底一层）结点的数据级别较高的列，同一列中可以对指定单元格行合并（colSpannable="true"）；而同一行输出行中，数据相同的可进行单元格行合并（rowSpannable="true")
+                  对于列标题,用于多级列标题。
+              (5) 在行(列)标题中，指定basedOn="true"表示，结果的输出取决于行(列)标题的数据源，对于主体区域不存在的数据将填空值；否则取决于主体区域数据源，将忽略行列标题中无关联数据。
+            -->
+            <!--<Region type="body" source="BodySource.Description" emptyFill="-"></Region>
+            <Region type="rowheader" source="RowHeaderSource.RowName"
+                  relation="RowId:RowId"
+                  IdField="[ID字段名]" parentField="[父级Id]" maxLevel="3"
+                  colSpannable="true" rowSpannable="true"
+                  basedOn="true"></Region>
+            <Region type="columnheader" source="ColumnHeaderSource.ColumnName"
+                  relation="ColumnId:ColumnId"
+                  parentField="[父级Id]"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="row|column|one|all"></Region>
+          </HeaderTable>-->
+          
+          <!-- 带标题的区域输出 -->
+          <!-- 【应用场景】
+            1、多行多列标题数据输出
+            2、只有行标题的数据输出、只有列标题的数据输出
+            3、单行标题输出、单列标题输出
+          -->
+          <!-- 【属性介绍】
+            location 表示填充区域位置
+            freeze   是否冻结窗口（对于多行多列标题，根据Body区域左上角位置冻结；只有行标题的，冻结行标题；只能列标题的冻结列标题
+          -->
+          <HeaderTable location="B3" freeze="true">
+            <!-- 填充区域 -->
+            <!--
+              type 包含body/rowheader/columnheader/corner四种值，分别表示Body区域、列标题、行标题、左上角区域等四个区域
+              source 标题数据源名称，可指定输出字段名(Source.Field)。
+              emptyFill 无数据单元格的填充字符
+              【多级标题属性】
+              headerBodyMapping 标题区域与Body区域的映射对应关系。有两种配置方式“<headerField>:<bodyField>”与“<headerField>:”
+                  前者是正常的数据源之间指定字段的值映射
+                  后者是，用header数据源的<headerField>字段值与body数据源的字段名映射
+              treeSource 多级标题数据源及输出字段，数据源名称与字段以"."分隔
+              treeInnerMapping 多级标题数据源构成树结构的内部对应关系,字段之间以"."分隔
+              headerTreeMapping 标题数据源与多级标题数据源的对应关系，字段之间以"."分隔
+              maxLevel 限制多级标题的层级
+              colSpannable 多级标题需要行合并，默认值true
+              rowSpannable 多级标题需要列合并, 默认值true
+              baseSource(暂不考虑) 是否基于标题数据源生成（否则以Body的数据源生成）
+              【左上角区域属性】
+              spanRule 包括row|column|one|none四种值，分别表示左上角区域基于列标题合并、基于行标题合并、全部合并、不合并
+            -->
+            <Region type="body" source="BodySource" emptyFill="-"></Region>
+            <Region type="rowheader|columnheader" 
+                  source="[HeaderSource.Id|HeaderSource.Conent]"
+                  headerBodyMapping="[HeaderSource.Field]:[BodySource.FKey]"
+                  treeSource="TreeSource.Conent"
+                  treeInnerMapping="[ID]:[ParentID]"
+                  headerTreeMapping="[HeaderSource.Id]:[TreeSource.ID]"
+                  maxLevel="3"
+                  colSpannable="true" rowSpannable="true"
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource|LeftUpperSource.Name" spanRule="row|column|one|none"></Region>
+          </HeaderTable>
+          <!-- 场景一：多行多列标题数据输出 -->
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource.Description" emptyFill="-"></Region>
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:Organization"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"
+                  basedSource="true"></Region>
+            <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:BusinessCategory"
+                  treeSource="ColumnTreeSource.Category"
+                  treeInnerMapping="Category:ParentCategory"
+                  headerTreeMapping="BizCategory:Category"
+                  colSpannable="false" rowSpannable="true"
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+      <!-- 场景二：只有行标题、只有列标题的输出 -->
+      <Sheet name="Sheet2">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource2"></Region>
+            <!-- 场景三：替换相同type属性的Region标题，将是单列标题的输出 -->
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:"
+                  colSpannable="true" rowSpannable="false"></Region>-->
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"></Region>
+          </HeaderTable>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource3"></Region>
+            <!-- 场景三：替换相同type属性的Region标题，将是单行标题的输出 -->
+            <!--<Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:"                  
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>-->
+            <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMaping="BizCategory:"
+                  treeSource="ColumnTreeSource.Category"
+                  treeInnerMapping="Category:ParentCategory"
+                  headerTreeMapping="BizCategory:Category"
+                  colSpannable="false" rowSpannable="true"
+                  basedSource="true"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+      <!-- 场景四：与场景三不同在于headerBodyMaping映射方式 -->
+      <Sheet name="Sheet3">
+        <Tables>
+          <HeaderTable location="B3" freeze="true">
+            <Region type="body" source="BodySource4"></Region>
+            <Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMaping="Organization:OrgName"
+                  treeSource="RowTreeSource.Org"
+                  treeInnerMapping="Org:ParentOrg"
+                  headerTreeMapping="Organization:Org"
+                  colSpannable="true" rowSpannable="false"></Region>
+          </HeaderTable>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct>
+    ...
+  </ExportProduct>
+</ExportConfig>
