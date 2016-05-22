@@ -34,7 +34,7 @@
         <!-- 主数据项: TableName="Cells" -->
         <Cells>
           <Cell location="B2" source="Cells.Title" index="0"/>
-          <Cell location="C5:M18" source="Cells.FormStyle" fill="scale" />
+          <Cell location="C5:M18" source="Cells.FormStyle" fill="stretch" />
           <!--0是默认值-->
           <!--<Cell location="C27" source="Cells.FormName" valueAppend="true" />
           <Cell location="E27" source="Cells.FormCode" valueAppend="true" />
@@ -128,7 +128,7 @@
         <!-- 主数据项: TableName="Cells" -->
         <Cells>
           <Cell location="B2" source="Cells.Title" index="0"/>
-          <Cell location="C5:M18" source="Cells.FormStyle" />
+          <Cell location="C5:M18" source="Cells.FormStyle"  fill="stretch" />
           <!--0是默认值-->
           <!--<Cell location="C27" source="Cells.FormName" valueAppend="true" />
           <Cell location="E27" source="Cells.FormCode" valueAppend="true" />
@@ -274,7 +274,7 @@
     <Sheets>
       <Sheet name="Sheet1">
         <Cells>
-          <Cell location="E5" source="Cells.FlowChart" index="0"/>
+          <Cell location="E5" source="Cells.FlowChart" index="0" fill="stretch" />
         </Cells>
         <Tables>
           <Table location="B5" source="NodeInfo" fields="BizCategory,OrgName,NodeName">
@@ -440,72 +440,6 @@
             <Field name="SourceItem" colspan="4" ></Field>
             <Field name="Algorithm" colspan="8" ></Field>
             <Field name="Remark" colspan="6" ></Field>
-          </Table>
-        </Tables>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="3ConfigReq" description="三配置需求分析" template="ExcelTemplate\Template_3ConfigReq.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = 3ConfigReq
-      (1) TableName = AppConfigSource
-          平台	    模块	  流程名称	配置需求	 业务场景	用户配置方法	配置功能	  影响功能名称	影响范围说明	  备注
-          Platform  Module  FlowName  ConfigReq  BizScene ConfigMethod  ConfigFunc  EffectedFunc  EffectedRegion  Remark
-      (2) TableName = FlowConfigSource
-          平台	    模块	  流程名称	配置需求	 业务场景	配置方法	    备注
-          Platform  Module  FlowName  ConfigReq  BizScene ConfigMethod  Remark
-      (3) TableName = ReportConfigSource
-          平台	    模块	  报表名称	 报表说明	    配置需求	配置方法	    备注
-          Platform  Module  ReportName Description  ConfigReq ConfigMethod  Remark
-    -->
-    <DataSource name="3ConfigReq">
-      <DataList name="CheckSource" value="√,"/>
-      <DataList name="DataTypeSource" value="文本,数字,日期"/>
-    </DataSource>
-    <Sheets>
-      <Sheet name="应用配置">
-        <Tables>
-          <Table location="B6" source="AppConfigSource" fields="Platform,Module,FlowName,ConfigReq,BizScene,ConfigMethod,ConfigFunc,EffectedFunc,EffectedRegion,Remark">
-            <RowNum />
-          </Table>
-        </Tables>
-      </Sheet>
-      <Sheet name="报表配置">
-        <Tables>
-          <Table location="B6" source="FlowConfigSource" fields="Platform,Module,FlowName,ConfigReq,BizScene,ConfigMethod,Remark">
-            <RowNum />
-          </Table>
-        </Tables>
-      </Sheet>
-      <Sheet name="流程配置">
-        <Tables>
-          <Table location="B6" source="ReportConfigSource" fields="Platform,Module,ReportName,Description,ConfigReq,ConfigMethod,Remark">
-            <RowNum />
-          </Table>
-        </Tables>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="4Line3Config" description="四线三配置" template="ExcelTemplate\Template_4Line3Config.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = 4Line3Config
-      (1) TableName = Cells 单行数据
-          标题
-          Title  
-      (2) TableName = 4Line3ConfigSource
-          流程名称	工作流程	节点	功能	   组织	        输入单据	加工步骤	规则算法	输出单据	线上线下	所需基础数据	依据标准	监控点	监控规则	  监控方式	  升级规则	 升级方式	 监控报表	      进度报表	     质量报表	     同比环比报表	综合报表	    共享内容	共享方式	共享对象	   应用配置	 流程配置   报表名称	报表配置	
-          FlowName  WorkFlow  Node  Function Organization Input     Process   Rule      Output    OnOffLine ReqBasicData  Standard  Monitor MonitorRule MonitorWay  UpdateRule UpdateWay MonitorReport  ScheduleReport QualityReport Rate         GeneralReport Shared    ShareWay  SharedObject AppConfig FlowConfig ReportName ReportConfig
-    -->
-    <DataSource name="4Line3Config">
-    </DataSource>
-    <Sheets>
-      <Sheet name="四线三配置分析">
-        <Cells>
-          <Cell location="B1" source="Cells.Title"/>
-        </Cells>
-        <Tables>
-          <Table location="B5" source="4Line3ConfigSource" fields="FlowName,WorkFlow,Node,Function,Organization,Input,Process,Rule,Output,OnOffLine,ReqBasicData,Standard,Monitor,MonitorRule,MonitorWay,UpdateRule,UpdateWay,MonitorReport,ScheduleReport,QualityReport,Rate,GeneralReport,Shared,ShareWay,SharedObject,AppConfig,FlowConfig,ReportName,ReportConfig">
-            <RowNum />
           </Table>
         </Tables>
       </Sheet>

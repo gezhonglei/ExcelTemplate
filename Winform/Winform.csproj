@@ -81,12 +81,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="ExcelTemplate\Template_3ConfigReq.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_4Line3Config.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="ExcelTemplate\Template_BusinessCategory.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -97,12 +91,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ExcelTemplate\Template_Organization.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_3ConfigReq.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_4Line3Config.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ExcelTemplate\Template_BusinessCategory.xlsx">
