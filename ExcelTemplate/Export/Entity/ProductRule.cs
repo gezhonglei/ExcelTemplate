@@ -164,6 +164,7 @@ namespace ExportTemplate.Export.Entity
         /// <param name="dataSet">数据集</param>
         public void LoadData(DataSet dataSet)
         {
+            ClearCache();
             foreach (DataTable dataTable in dataSet.Tables)
             {
                 Source source = GetSource(dataTable.TableName);
@@ -178,6 +179,17 @@ namespace ExportTemplate.Export.Entity
                         Name = dataTable.TableName,
                         Table = dataTable
                     });
+                }
+            }
+        }
+
+        private void ClearCache()
+        {
+            foreach (var sheet in _sheets)
+            {
+                foreach (var table in sheet.Tables)
+                {
+                    table.ClearCache();
                 }
             }
         }

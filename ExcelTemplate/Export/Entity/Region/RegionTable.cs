@@ -103,5 +103,13 @@ namespace ExportTemplate.Export.Entity.Region
             newRegionTable._regions = _regions.Clone(productRule, newRegionTable);
             return newRegionTable;
         }
+
+        public override void ClearCache()
+        {
+            foreach (var region in _regions)
+            {
+                region.ClearCache();
+            }
+        }
     }
 }

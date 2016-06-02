@@ -109,6 +109,12 @@ namespace ExportTemplate.Export.Entity.Region
         //public abstract object Clone();
 
         public abstract Region CloneEntity(ProductRule productRule, BaseEntity container);
+
+        public void ClearCache()
+        {
+            _location = null;
+            _nodes = null;
+        }
     }
 
 }

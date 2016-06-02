@@ -142,5 +142,10 @@ namespace ExportTemplate.Export.Entity
             }
             return newList;
         }
+
+        /// <summary>
+        /// 清除缓存数据
+        /// </summary>
+        public virtual void ClearCache() { }
     }
 }
