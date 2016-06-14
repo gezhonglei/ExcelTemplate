@@ -38,8 +38,8 @@ namespace ExportTemplate.Export.Entity.Region
                         nodes.Add(new OutputNode()
                         {
                             Content = row[Field],
-                            ColumnIndex = tmpColNodes.First().RowIndex,
-                            RowIndex = tmpRowNodes.First().ColumnIndex,
+                            ColumnIndex = tmpRowNodes.First().ColumnIndex,
+                            RowIndex = tmpColNodes.First().RowIndex,
                             ColumnSpan = 1,
                             RowSpan = 1
                         });

@@ -151,7 +151,7 @@ namespace ExportTemplate.Export.Entity.Region
                     return _location.ColCount;
                 }
                 ColumnHeaderRegion colHeader = _table.GetRegion(RegionType.ColumnHeader) as ColumnHeaderRegion;
-                return colHeader != null ? colHeader.RowCount : 0;
+                return colHeader != null ? colHeader.ColumnCount : 0;
             }
         }
 

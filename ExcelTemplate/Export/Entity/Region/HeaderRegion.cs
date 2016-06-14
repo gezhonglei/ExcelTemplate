@@ -116,7 +116,7 @@ namespace ExportTemplate.Export.Entity.Region
     }
 
     /// <summary>
-    /// 行标题区域
+    /// 列标题区域
     /// </summary>
     public class ColumnHeaderRegion : HeaderRegion
     {
@@ -281,7 +281,7 @@ namespace ExportTemplate.Export.Entity.Region
     }
 
     /// <summary>
-    /// 列标题区域
+    /// 行标题区域
     /// </summary>
     public class RowHeaderRegion : HeaderRegion
     {
