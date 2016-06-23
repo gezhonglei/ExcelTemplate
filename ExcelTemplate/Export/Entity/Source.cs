@@ -199,9 +199,121 @@ namespace ExportTemplate.Export.Entity
             return null;
         }
 
+        public DataRow[] GetChildren(object id)
+        {
+            return Table.AsEnumerable().Where(p => id.Equals(p[ParentIdField])).ToArray();
+        }
+
+        public DataRow[] GetRoots()
+        {
+            List<DataRow> rows = new List<DataRow>();
+            foreach (DataRow row in Table.Rows)
+            {
+                //if (Table.Select(string.Format("{0}='{1}'", IdField, row[ParentIdField])).Length == 0)
+                if (Table.AsEnumerable().Where(p => p[IdField].Equals(row[ParentIdField])).Count() == 0)
+                {
+                    rows.Add(row);
+                }
+            }
+            return rows.ToArray();
+        }
+
+        public DataRow[] GetLeaves()
+        {
+            List<DataRow> rows = new List<DataRow>();
+            foreach (DataRow row in Table.Rows)
+            {
+                //if (Table.Select(string.Format("{0}='{1}'", ParentIdField, row[IdField])).Length == 0)
+                if (Table.AsEnumerable().Where(p => row[IdField].Equals(p[ParentIdField])).Count() == 0)
+                {
+                    rows.Add(row);
+                }
+            }
+            return rows.ToArray();
+        }
+
+        /// <summary>
+        /// 必须保证分组的顺序
+        /// </summary>
+        /// <param name="maxDepth"></param>
+        /// <returns></returns>
+        public object[] GetLeaves(int maxDepth)
+        {
+            List<object> ids = new List<object>();
+            foreach (DataRow row in GetRoots())
+            {
+                travelDepthForLeaves(row, 1, maxDepth, ids);
+            }
+            return ids.ToArray();
+        }
+
+        private void travelDepthForLeaves(DataRow row, int depth, int maxDepth, List<object> ids)
+        {
+            if (depth > maxDepth) return;
+            if (depth == maxDepth) { ids.Add(row[IdField]); return; }
+
+            DataRow[] rows = GetChildren(row[IdField]);
+            if (rows.Length == 0)
+            {
+                ids.Add(row[IdField]);
+            }
+            else
+            {
+                foreach (var item in rows)
+                {
+                    travelDepthForLeaves(item, depth + 1, maxDepth, ids);
+                }
+            }
+        }
+
+        public int Depth(object id)
+        {
+            int count = 0;
+            object tmpId = null;
+            DataRow[] rows = Table.Select(string.Format("{0}='{1}'", IdField, id));
+            while (rows.Length > 0)
+            {
+                count++;
+                tmpId = rows[0][ParentIdField];
+                rows = Table.Select(string.Format("{0}='{1}'", IdField, tmpId));
+            }
+            return count;
+        }
+
+        public int MaxDepth()
+        {
+            int maxDept = 0;
+            foreach (DataRow row in GetLeaves())
+            {
+                maxDept = Math.Max(Depth(row[IdField]), maxDept);
+            }
+            return maxDept;
+        }
+
+        public IDictionary<object, int> AllDepth()
+        {
+            IDictionary<object, int> depthDict = new Dictionary<object, int>();
+            foreach (DataRow row in GetRoots())
+            {
+                travelDepth(row, 1, depthDict);
+            }
+            return depthDict;
+        }
+
+        private void travelDepth(DataRow row, int level, IDictionary<object, int> depthDict)
+        {
+            object tmpId = row[IdField];
+            depthDict.Add(tmpId, level);
+            foreach (var item in Table.AsEnumerable().Where(p => tmpId.Equals(p[ParentIdField])))
+            {
+                travelDepth(item, level + 1, depthDict);
+            }
+        }
+
         public override string ToString()
         {
-            return string.Format("treeSource=\"{0}.{1}\" treeInnerMapping=\"{2}:{3}\"", Name, ContentField, IdField, ParentIdField);
+            //return string.Format("treeSource=\"{0}.{1}\" treeInnerMapping=\"{2}:{3}\"", Name, ContentField, IdField, ParentIdField);
+            return string.Format("source=\"{0}.{1}\" innerMapping=\"{2}:{3}\"", Name, ContentField, IdField, ParentIdField);
         }
 
         public override object Clone()

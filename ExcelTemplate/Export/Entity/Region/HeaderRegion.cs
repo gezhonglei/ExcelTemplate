@@ -15,7 +15,7 @@ namespace ExportTemplate.Export.Entity.Region
         public bool ColSpannable;
         public bool RowSpannable;
         public bool IsBasedOn;
-        public TreeSource TreeSource;
+        public TreeSource TreeSource { get { return Source is TreeSource ? Source as TreeSource : null; } }
         /// <summary>
         /// 与Body区域之间的关联
         /// </summary>
@@ -23,7 +23,7 @@ namespace ExportTemplate.Export.Entity.Region
         /// <summary>
         /// 与TreeSource区域之间的关联
         /// </summary>
-        public SourceRelation HeaderTreeRelation;
+        //public SourceRelation HeaderTreeRelation;
 
         /// <summary>
         /// 不让实例化
@@ -43,12 +43,12 @@ namespace ExportTemplate.Export.Entity.Region
         /// 获取与Body直接关联那一级标题
         /// </summary>
         /// <returns></returns>
-        public object[] GetHeaderContent()
-        {
-            //如果不指定最后一级标题的输出，将从Body区域的数据取
-            //return IsBasedOn && _maxLevelHeader != null ? _maxLevelHeader.GetReferecedData("", HeaderBodyRelation.Field) : HeaderBodyRelation.GetReferecedData("", HeaderBodyRelation.Field);
-            return Source.GetValues(Field).ToArray();
-        }
+        //public object[] GetHeaderContent()
+        //{
+        //    //如果不指定最后一级标题的输出，将从Body区域的数据取
+        //    //return IsBasedOn && _maxLevelHeader != null ? _maxLevelHeader.GetReferecedData("", HeaderBodyRelation.Field) : HeaderBodyRelation.GetReferecedData("", HeaderBodyRelation.Field);
+        //    return Source.GetValues(Field).ToArray();
+        //}
 
         /// <summary>
         /// 获取标题级数
@@ -56,27 +56,30 @@ namespace ExportTemplate.Export.Entity.Region
         /// <returns></returns>
         public int GetHeaderLevel()
         {
-            if (HeaderTreeRelation == null) return 1;
-
-            int maxDept = 0;
-            foreach (var row in HeaderTreeRelation.GetReferencedRows())
-            {
-                /**
-                 * 可能存在两个问题：
-                 * 1、递归的终止条件：用null表示可能不够
-                 * 2、最后一级标题的指定源：必须是与Body数据源关联的字段（缺少灵活性）
-                 */
-                int count = 0;
-                object tmpId = row[TreeSource.IdField];
-                while (tmpId != null && !(tmpId is DBNull))//中止条件？
-                {
-                    count++;
-                    tmpId = TreeSource.GetParentId(tmpId);
-                }
-                //只取最大值
-                maxDept = count > maxDept ? count : maxDept;
-            }
+            if (TreeSource == null) return 1;
+            int maxDept = TreeSource.MaxDepth();
             return MaxLevel <= 0 ? maxDept : (maxDept > MaxLevel ? MaxLevel : maxDept);
+
+            //if (HeaderTreeRelation == null) return 1;
+            //int maxDept = 0;
+            //foreach (var row in HeaderTreeRelation.GetReferencedRows())
+            //{
+            //    /**
+            //     * 可能存在两个问题：
+            //     * 1、递归的终止条件：用null表示可能不够
+            //     * 2、最后一级标题的指定源：必须是与Body数据源关联的字段（缺少灵活性）
+            //     */
+            //    int count = 0;
+            //    object tmpId = row[TreeSource.IdField];
+            //    while (tmpId != null && !(tmpId is DBNull))//中止条件？
+            //    {
+            //        count++;
+            //        tmpId = TreeSource.GetParentId(tmpId);
+            //    }
+            //    //只取最大值
+            //    maxDept = count > maxDept ? count : maxDept;
+            //}
+            //return MaxLevel <= 0 ? maxDept : (maxDept > MaxLevel ? MaxLevel : maxDept);
         }
 
         //private string GetIdField()
@@ -88,11 +91,12 @@ namespace ExportTemplate.Export.Entity.Region
         {
             return string.Format("<Region{0} />",
                 (string.Format(" type=\"{0}\"", this is RowHeaderRegion ? "rowheader" : "columnheader")) +
-                (Source != null ? string.Format(" source=\"{0}.{1}\"", Source.Name, Field) : string.Empty) +
+                //(Source != null ? string.Format(" source=\"{0}.{1}\"", Source.Name, Field) : string.Empty) +
+                (Source is TreeSource ? TreeSource.ToString() : Source != null ? string.Format(" source=\"{0}.{1}\"", Source.Name, Field) : string.Empty) +
                 (!string.IsNullOrEmpty(EmptyFill) ? string.Format(" emptyFill=\"{0}\"", EmptyFill) : string.Empty) +
                 (HeaderBodyRelation != null ? " " + HeaderBodyRelation.ToString("headerBodyMapping") : string.Empty) +
-                (TreeSource != null ? " " + TreeSource.ToString() : string.Empty) +
-                (HeaderTreeRelation != null ? " " + HeaderTreeRelation.ToString("headerTreeMapping") : string.Empty) +
+                //(TreeSource != null ? " " + TreeSource.ToString() : string.Empty) +
+                //(HeaderTreeRelation != null ? " " + HeaderTreeRelation.ToString("headerTreeMapping") : string.Empty) +
                 (MaxLevel > 0 ? string.Format(" maxLevel=\"{0}\"", MaxLevel) : string.Empty) +
                 (ColSpannable ? " colSpannable=\"true\"" : string.Empty) +
                 (RowSpannable ? " rowSpannable=\"true\"" : string.Empty) +
@@ -122,74 +126,166 @@ namespace ExportTemplate.Export.Entity.Region
     {
         public ColumnHeaderRegion(RegionTable table) : base(table) { }
 
+        /// <summary>
+        /// 处理当前节点的子节点
+        /// </summary>
+        /// <returns>子孙叶子节点</returns>
+        private OutputNode[] TravelDepth(object id, object[] leafIds, int maxDepth, IDictionary<object, int> levelDict, IList<OutputNode> nodes)
+        {
+            DataRow[] subRows = TreeSource.GetChildren(id);
+            int depth = levelDict[id] + 1;
+            List<OutputNode> results = new List<OutputNode>();
+            foreach (var row in subRows)
+            {
+                object subId = row[TreeSource.IdField];
+                bool isLeaf = leafIds.Contains(subId);
+                OutputNode node = new OutputNode()
+                {
+                    Content = row[Field],
+                    ColumnIndex = ColumnIndex + depth - 1
+                };
+                if (isLeaf)
+                {
+                    // 根节点需要指定Tag，用于BodySource映射
+                    node.Tag = row[HeaderBodyRelation.Field];
+                    node.RowIndex = RowIndex + Array.IndexOf(leafIds, subId);
+                    node.RowSpan = 1;
+                    node.ColumnSpan = maxDepth - depth + 1;
+                    results.Add(node);
+                }
+                else
+                {
+                    OutputNode[] leafNodes = TravelDepth(subId, leafIds, maxDepth, levelDict, nodes);
+                    node.RowIndex = leafNodes.Min(p => p.RowIndex);
+                    node.RowSpan = leafNodes.Length;
+                    node.ColumnSpan = 1;
+                    results.AddRange(leafNodes);
+                }
+                nodes.Add(node);
+            }
+            return results.ToArray();
+        }
+
         protected override List<OutputNode> CalulateNodes()
         {
             List<OutputNode> nodes = new List<OutputNode>();
             if (Source.Table != null)
             {
-                //1、将数据组织到DataTable临时变量tmpDataTable中
-                DataTable tmpDataTable = new DataTable();
-                for (int i = 0; i <= this.ColumnCount; i++)
+                if (TreeSource != null)
                 {
-                    tmpDataTable.Columns.Add("Column" + i);
-                }
-                for (int i = 0; i < this.RowCount; i++)
-                {
-                    tmpDataTable.Rows.Add(tmpDataTable.NewRow());
-                }
+                    IDictionary<object, int> levelDict = TreeSource.AllDepth();
+                    int maxDepth = GetHeaderLevel(); // 获取实际有效的标题级别
+                    object[] leafIds = TreeSource.GetLeaves(maxDepth); // 叶子节点的顺序很重要
 
-                for (int i = 0; i < this.RowCount; i++)
-                {
-                    var headerRow = Source.Table.Rows[i];
-                    tmpDataTable.Rows[i][0] = headerRow[Field];
-                    //用于给Body确定列号使用
-                    tmpDataTable.Rows[i][ColumnCount] = headerRow[HeaderBodyRelation.Field];
-
-                    if (HeaderTreeRelation != null)
+                    foreach (var row in TreeSource.GetRoots())
                     {
-                        var tmpRow = TreeSource.GetRow(headerRow[HeaderTreeRelation.Field]);
-                        for (int j = 0; j < this.ColumnCount; j++)
+                        int depth = 1;
+                        object subId = row[TreeSource.IdField];
+                        bool isLeaf = leafIds.Contains(subId);
+                        OutputNode node = new OutputNode()
                         {
-                            if (tmpRow == null) break;
-                            tmpDataTable.Rows[i][j] = tmpRow[TreeSource.ContentField];
-                            tmpRow = TreeSource.GetParent(tmpRow[TreeSource.ParentIdField]);
-                        }
-                    }
-                }
-                //TODO: 2、根据需要对数据进行排序，达到分组、合并的目的
-
-                //3、根据DataTable计算出输出结点
-                for (int j = 0; j < ColumnCount; j++)
-                {
-                    for (int i = 0; i < RowCount; )
-                    {
-                        if (tmpDataTable.Rows[i][j] is DBNull) { i++; continue; }
-                        OutputNode node = new OutputNode() { Content = tmpDataTable.Rows[i][j] };
-                        if (j == 0)
+                            Content = row[Field],
+                            ColumnIndex = ColumnIndex + depth - 1
+                        };
+                        if (isLeaf)
                         {
-                            node.Tag = tmpDataTable.Rows[i][ColumnCount];
-                        }
-                        //node.ColumnIndex = ColumnIndex + ColumnCount - 1 - j;
-                        node.RowIndex = RowIndex + i;
-                        node.ColumnSpan = ColSpannable && j + 1 != ColumnCount && (tmpDataTable.Rows[i][j + 1] is DBNull) ?
-                            ColumnCount - j : 1;
-                        //如果需列合并,应该向外移位
-                        node.ColumnIndex = ColumnIndex + ColumnCount - node.ColumnSpan - j;
-                        node.RowSpan = 1;
-                        if (RowSpannable)
-                        {
-                            while (++i < RowCount && node.Content.Equals(tmpDataTable.Rows[i][j]))
-                            {
-                                node.RowSpan++;
-                            }
+                            // 根节点需要指定Tag，用于BodySource映射
+                            node.Tag = row[HeaderBodyRelation.Field];
+                            node.RowIndex = RowIndex + Array.IndexOf(leafIds, subId);
+                            node.RowSpan = 1;
+                            node.ColumnSpan = maxDepth - depth + 1;
                         }
                         else
                         {
-                            i++;
+                            OutputNode[] leafNodes = TravelDepth(subId, leafIds, maxDepth, levelDict, nodes);
+                            node.RowIndex = leafNodes.Min(p => p.RowIndex);
+                            node.RowSpan = leafNodes.Length;
+                            node.ColumnSpan = 1;
                         }
                         nodes.Add(node);
                     }
                 }
+                else
+                {
+                    for (int i = 0; i < RowCount; i++)
+                    {
+                        DataRow row = Source.Table.Rows[i];
+                        OutputNode node = new OutputNode()
+                        {
+                            Content = row[Field],
+                            Tag = row[HeaderBodyRelation.Field],
+                            RowIndex = RowIndex + i,
+                            ColumnIndex = ColumnIndex,
+                            RowSpan = 1,
+                            ColumnSpan = 1
+                        };
+                        nodes.Add(node);
+                    }
+                }
+
+                ////1、将数据组织到DataTable临时变量tmpDataTable中
+                //DataTable tmpDataTable = new DataTable();
+                //for (int i = 0; i <= this.ColumnCount; i++)
+                //{
+                //    tmpDataTable.Columns.Add("Column" + i);
+                //}
+                //for (int i = 0; i < this.RowCount; i++)
+                //{
+                //    tmpDataTable.Rows.Add(tmpDataTable.NewRow());
+                //}
+
+                //for (int i = 0; i < this.RowCount; i++)
+                //{
+                //    var headerRow = Source.Table.Rows[i];
+                //    tmpDataTable.Rows[i][0] = headerRow[Field];
+                //    //用于给Body确定列号使用
+                //    tmpDataTable.Rows[i][ColumnCount] = headerRow[HeaderBodyRelation.Field];
+
+                //    if (HeaderTreeRelation != null)
+                //    {
+                //        var tmpRow = TreeSource.GetRow(headerRow[HeaderTreeRelation.Field]);
+                //        for (int j = 0; j < this.ColumnCount; j++)
+                //        {
+                //            if (tmpRow == null) break;
+                //            tmpDataTable.Rows[i][j] = tmpRow[TreeSource.ContentField];
+                //            tmpRow = TreeSource.GetParent(tmpRow[TreeSource.ParentIdField]);
+                //        }
+                //    }
+                //}
+                ////TODO: 2、根据需要对数据进行排序，达到分组、合并的目的
+
+                ////3、根据DataTable计算出输出结点
+                //for (int j = 0; j < ColumnCount; j++)
+                //{
+                //    for (int i = 0; i < RowCount; )
+                //    {
+                //        if (tmpDataTable.Rows[i][j] is DBNull) { i++; continue; }
+                //        OutputNode node = new OutputNode() { Content = tmpDataTable.Rows[i][j] };
+                //        if (j == 0)
+                //        {
+                //            node.Tag = tmpDataTable.Rows[i][ColumnCount];
+                //        }
+                //        //node.ColumnIndex = ColumnIndex + ColumnCount - 1 - j;
+                //        node.RowIndex = RowIndex + i;
+                //        node.ColumnSpan = ColSpannable && j + 1 != ColumnCount && (tmpDataTable.Rows[i][j + 1] is DBNull) ?
+                //            ColumnCount - j : 1;
+                //        //如果需列合并,应该向外移位
+                //        node.ColumnIndex = ColumnIndex + ColumnCount - node.ColumnSpan - j;
+                //        node.RowSpan = 1;
+                //        if (RowSpannable)
+                //        {
+                //            while (++i < RowCount && node.Content.Equals(tmpDataTable.Rows[i][j]))
+                //            {
+                //                node.RowSpan++;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            i++;
+                //        }
+                //        nodes.Add(node);
+                //    }
+                //}
             }
             return nodes;
         }
@@ -227,7 +323,9 @@ namespace ExportTemplate.Export.Entity.Region
                 {
                     return _location.RowCount;
                 }
-                return Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
+                //return Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
+                if (Source == null || Source.Table == null) return 0;
+                return TreeSource != null ? TreeSource.GetLeaves().Length : Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
             }
         }
 
@@ -268,14 +366,14 @@ namespace ExportTemplate.Export.Entity.Region
             {
                 newRegion.HeaderBodyRelation = HeaderBodyRelation.Clone(productRule);
             }
-            if (HeaderTreeRelation != null)
-            {
-                newRegion.HeaderTreeRelation = HeaderTreeRelation.Clone(productRule);
-            }
-            if (TreeSource != null)
-            {
-                newRegion.TreeSource = productRule.GetSource(TreeSource.Name) as TreeSource;
-            }
+            //if (HeaderTreeRelation != null)
+            //{
+            //    newRegion.HeaderTreeRelation = HeaderTreeRelation.Clone(productRule);
+            //}
+            //if (TreeSource != null)
+            //{
+            //    newRegion.TreeSource = productRule.GetSource(TreeSource.Name) as TreeSource;
+            //}
             return newRegion;
         }
     }
@@ -287,76 +385,168 @@ namespace ExportTemplate.Export.Entity.Region
     {
         public RowHeaderRegion(RegionTable table) : base(table) { }
 
+        /// <summary>
+        /// 处理当前节点的子节点
+        /// </summary>
+        /// <returns>子孙叶子节点</returns>
+        private OutputNode[] TravelDepth(object id, object[] leafIds, int maxDepth, IDictionary<object, int> levelDict, IList<OutputNode> nodes)
+        {
+            DataRow[] subRows = TreeSource.GetChildren(id);
+            int depth = levelDict[id] + 1;
+            List<OutputNode> results = new List<OutputNode>();
+            foreach (var row in subRows)
+            {
+                object subId = row[TreeSource.IdField];
+                bool isLeaf = leafIds.Contains(subId);
+                OutputNode node = new OutputNode()
+                {
+                    Content = row[Field],
+                    RowIndex = RowIndex + depth - 1
+                };
+                if (isLeaf)
+                {
+                    // 根节点需要指定Tag，用于BodySource映射
+                    node.Tag = row[HeaderBodyRelation.Field];
+                    node.ColumnIndex = ColumnIndex + Array.IndexOf(leafIds, subId);
+                    node.ColumnSpan = 1;
+                    node.RowSpan = maxDepth - depth + 1;
+                    results.Add(node);
+                }
+                else
+                {
+                    OutputNode[] leafNodes = TravelDepth(subId, leafIds, maxDepth, levelDict, nodes);
+                    node.ColumnIndex = leafNodes.Min(p => p.ColumnIndex);
+                    node.ColumnSpan = leafNodes.Length;
+                    node.RowSpan = 1;
+                    results.AddRange(leafNodes);
+                }
+                nodes.Add(node);
+            }
+            return results.ToArray();
+        }
+
         protected override List<OutputNode> CalulateNodes()
         {
             List<OutputNode> nodes = new List<OutputNode>();
             if (Source.Table != null)
             {
-                //1、将数据组织到DataTable临时变量tmpDataTable中
-                DataTable tmpDataTable = new DataTable();
-                for (int i = 0; i < this.ColumnCount; i++)
+                if (TreeSource != null)
                 {
-                    tmpDataTable.Columns.Add("Column" + i);
-                }
-                for (int i = 0; i <= this.RowCount; i++)
-                {
-                    tmpDataTable.Rows.Add(tmpDataTable.NewRow());
-                }
+                    IDictionary<object, int> levelDict = TreeSource.AllDepth();
+                    int maxDepth = GetHeaderLevel(); // 获取实际有效的标题级别
+                    object[] leafIds = TreeSource.GetLeaves(maxDepth); // 叶子节点的顺序很重要
 
-                for (int i = 0; i < this.ColumnCount; i++)
-                {
-                    var headerRow = Source.Table.Rows[i];
-                    tmpDataTable.Rows[0][i] = headerRow[Field];
-                    //用于给Body确定行号使用
-                    tmpDataTable.Rows[RowCount][i] = headerRow[HeaderBodyRelation.Field];
-
-                    if (HeaderTreeRelation != null)
+                    foreach (DataRow row in TreeSource.GetRoots())
                     {
-                        var tmpRow = TreeSource.GetRow(headerRow[HeaderTreeRelation.Field]);
-                        for (int j = 0; j < this.RowCount; j++)
+                        object subId = row[TreeSource.IdField];
+                        bool isLeaf = leafIds.Contains(subId);
+                        int depth = 1;
+                        OutputNode node = new OutputNode()
                         {
-                            if (tmpRow == null) break;
-                            tmpDataTable.Rows[j][i] = tmpRow[TreeSource.ContentField];
-                            tmpRow = TreeSource.GetParent(tmpRow[TreeSource.ParentIdField]);
-                        }
-                    }
-                }
-                //TODO: 2、根据需要对数据进行排序，达到分组、合并的目的
-
-                //3、根据DataTable计算出输出结点
-                for (int i = 0; i < RowCount; i++)
-                {
-                    for (int j = 0; j < ColumnCount; )
-                    {
-                        object content = tmpDataTable.Rows[i][j];
-                        if (content is DBNull) { j++; continue; }
-                        OutputNode node = new OutputNode() { Content = content };
-                        if (i == 0)
+                            Content = row[Field],
+                            RowIndex = RowIndex + depth - 1
+                        };
+                        if (isLeaf)
                         {
-                            node.Tag = tmpDataTable.Rows[RowCount][j];
-                        }
-                        node.ColumnIndex = ColumnIndex + j;
-                        //node.RowIndex = RowIndex + RowCount - 1 - i;
-                        //父级合并
-                        node.RowSpan = RowSpannable && i + 1 != RowCount && (tmpDataTable.Rows[i + 1][j] is DBNull) ?
-                            RowCount - i : 1;
-                        node.RowIndex = RowIndex + RowCount - node.RowSpan - i;
-                        node.ColumnSpan = 1;
-                        if (ColSpannable)
-                        {
-                            //同一级的合并
-                            while (++j < ColumnCount && content.Equals(tmpDataTable.Rows[i][j]))
-                            {
-                                node.ColumnSpan++;
-                            }
+                            // 根节点需要指定Tag，用于BodySource映射
+                            node.Tag = row[HeaderBodyRelation.Field];
+                            node.ColumnIndex = ColumnIndex + Array.IndexOf(leafIds, subId);
+                            node.ColumnSpan = 1;
+                            node.RowSpan = maxDepth - depth + 1;
                         }
                         else
                         {
-                            j++;
+                            OutputNode[] leafNodes = TravelDepth(subId, leafIds, maxDepth, levelDict, nodes);
+                            node.ColumnIndex = leafNodes.Min(p => p.ColumnIndex);
+                            node.ColumnSpan = leafNodes.Length;
+                            node.RowSpan = 1;
                         }
                         nodes.Add(node);
                     }
                 }
+                else
+                {
+                    for (int i = 0; i < ColumnCount; i++)
+                    {
+                        DataRow row = Source.Table.Rows[i];
+                        OutputNode node = new OutputNode()
+                        {
+                            Content = row[Field],
+                            Tag = row[HeaderBodyRelation.Field],
+                            RowIndex = RowIndex,
+                            ColumnIndex = ColumnIndex + i,
+                            RowSpan = 1,
+                            ColumnSpan = 1
+                        };
+                        nodes.Add(node);
+                    }
+                }
+
+                ////1、将数据组织到DataTable临时变量tmpDataTable中
+                //DataTable tmpDataTable = new DataTable();
+                //for (int i = 0; i < this.ColumnCount; i++)
+                //{
+                //    tmpDataTable.Columns.Add("Column" + i);
+                //}
+                //for (int i = 0; i <= this.RowCount; i++)
+                //{
+                //    tmpDataTable.Rows.Add(tmpDataTable.NewRow());
+                //}
+
+                //for (int i = 0; i < this.ColumnCount; i++)
+                //{
+                //    var headerRow = Source.Table.Rows[i];
+                //    tmpDataTable.Rows[0][i] = headerRow[Field];
+                //    //用于给Body确定行号使用
+                //    tmpDataTable.Rows[RowCount][i] = headerRow[HeaderBodyRelation.Field];
+
+                //    if (HeaderTreeRelation != null)
+                //    {
+                //        var tmpRow = TreeSource.GetRow(headerRow[HeaderTreeRelation.Field]);
+                //        for (int j = 0; j < this.RowCount; j++)
+                //        {
+                //            if (tmpRow == null) break;
+                //            tmpDataTable.Rows[j][i] = tmpRow[TreeSource.ContentField];
+                //            tmpRow = TreeSource.GetParent(tmpRow[TreeSource.ParentIdField]);
+                //        }
+                //    }
+                //}
+                ////TODO: 2、根据需要对数据进行排序，达到分组、合并的目的
+
+                ////3、根据DataTable计算出输出结点
+                //for (int i = 0; i < RowCount; i++)
+                //{
+                //    for (int j = 0; j < ColumnCount; )
+                //    {
+                //        object content = tmpDataTable.Rows[i][j];
+                //        if (content is DBNull) { j++; continue; }
+                //        OutputNode node = new OutputNode() { Content = content };
+                //        if (i == 0)
+                //        {
+                //            node.Tag = tmpDataTable.Rows[RowCount][j];
+                //        }
+                //        node.ColumnIndex = ColumnIndex + j;
+                //        //node.RowIndex = RowIndex + RowCount - 1 - i;
+                //        //父级合并
+                //        node.RowSpan = RowSpannable && i + 1 != RowCount && (tmpDataTable.Rows[i + 1][j] is DBNull) ?
+                //            RowCount - i : 1;
+                //        node.RowIndex = RowIndex + RowCount - node.RowSpan - i;
+                //        node.ColumnSpan = 1;
+                //        if (ColSpannable)
+                //        {
+                //            //同一级的合并
+                //            while (++j < ColumnCount && content.Equals(tmpDataTable.Rows[i][j]))
+                //            {
+                //                node.ColumnSpan++;
+                //            }
+                //        }
+                //        else
+                //        {
+                //            j++;
+                //        }
+                //        nodes.Add(node);
+                //    }
+                //}
             }
             return nodes;
         }
@@ -406,7 +596,9 @@ namespace ExportTemplate.Export.Entity.Region
                 {
                     return _location.ColCount;
                 }
-                return Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
+                //return Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
+                if (Source == null || Source.Table == null) return 0;
+                return TreeSource != null ? TreeSource.GetLeaves().Length : Source != null && Source.Table != null ? Source.Table.Rows.Count : 0;
             }
         }
 
@@ -434,14 +626,14 @@ namespace ExportTemplate.Export.Entity.Region
             {
                 newRegion.HeaderBodyRelation = HeaderBodyRelation.Clone(productRule);
             }
-            if (HeaderTreeRelation != null)
-            {
-                newRegion.HeaderTreeRelation = HeaderTreeRelation.Clone(productRule);
-            }
-            if (TreeSource != null)
-            {
-                newRegion.TreeSource = productRule.GetSource(TreeSource.Name) as TreeSource;
-            }
+            //if (HeaderTreeRelation != null)
+            //{
+            //    newRegion.HeaderTreeRelation = HeaderTreeRelation.Clone(productRule);
+            //}
+            //if (TreeSource != null)
+            //{
+            //    newRegion.TreeSource = productRule.GetSource(TreeSource.Name) as TreeSource;
+            //}
             return newRegion;
         }
     }

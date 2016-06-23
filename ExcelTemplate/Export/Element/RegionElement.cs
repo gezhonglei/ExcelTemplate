@@ -53,22 +53,24 @@ namespace ExportTemplate.Export.Element
             else if (_entity is HeaderRegion)
             {
                 HeaderRegion header = _entity as HeaderRegion;
-                tmpStr = _data.GetAttribute("headerBodyMaping");
+                header.Source = parseTreeSource(tmpStr, _data.GetAttribute("innerMapping"), prodRule) ?? header.Source;
+
+                tmpStr = _data.GetAttribute("headerBodyMapping");
                 header.HeaderBodyRelation = parseRelation(header.Source, tmpStr, prodRule);
-                tmpStr = _data.GetAttribute("treeSource");
-                header.TreeSource = parseTreeSource(tmpStr, _data.GetAttribute("treeInnerMapping"), prodRule);
-                //header.IdField = element.GetAttribute("IdField");
-                //header.ParentField = element.GetAttribute("parentField");
-                tmpStr = _data.GetAttribute("headerTreeMapping");
-                header.HeaderTreeRelation = parseRelation(header.Source, tmpStr, prodRule);
-                if (header.HeaderTreeRelation != null)
-                {
-                    header.HeaderTreeRelation.ReferecedSource = header.TreeSource;
-                    header.MaxLevel = ParseUtil.ParseInt(_data.GetAttribute("maxLevel"), -1);
-                    header.ColSpannable = ParseUtil.ParseBoolean(_data.GetAttribute("colSpannable"));
-                    header.RowSpannable = ParseUtil.ParseBoolean(_data.GetAttribute("rowSpannable"));
-                    header.IsBasedOn = ParseUtil.ParseBoolean(_data.GetAttribute("basedSource"));
-                }
+                //tmpStr = _data.GetAttribute("treeSource");
+                //header.TreeSource = parseTreeSource(tmpStr, _data.GetAttribute("treeInnerMapping"), prodRule);
+                ////header.IdField = element.GetAttribute("IdField");
+                ////header.ParentField = element.GetAttribute("parentField");
+                //tmpStr = _data.GetAttribute("headerTreeMapping");
+                //header.HeaderTreeRelation = parseRelation(header.Source, tmpStr, prodRule);
+                //if (header.HeaderTreeRelation != null)
+                //{
+                //    header.HeaderTreeRelation.ReferecedSource = header.TreeSource;
+                header.MaxLevel = ParseUtil.ParseInt(_data.GetAttribute("maxLevel"), -1);
+                header.ColSpannable = ParseUtil.ParseBoolean(_data.GetAttribute("colSpannable"));
+                header.RowSpannable = ParseUtil.ParseBoolean(_data.GetAttribute("rowSpannable"));
+                header.IsBasedOn = ParseUtil.ParseBoolean(_data.GetAttribute("basedSource"));
+                //}
             }
             else if (_entity is CornerRegion)
             {

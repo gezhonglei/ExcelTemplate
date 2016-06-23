@@ -213,14 +213,14 @@
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource.Description" emptyFill="-"></Region>
             <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:Organization"
+                  headerBodyMapping="Organization:Organization"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"
                   colSpannable="true" rowSpannable="false"
                   basedSource="true"></Region>
             <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:BusinessCategory"
+                  headerBodyMapping="BizCategory:BusinessCategory"
                   treeSource="ColumnTreeSource.Category"
                   treeInnerMapping="Category:ParentCategory"
                   headerTreeMapping="BizCategory:Category"
@@ -237,10 +237,10 @@
             <Region type="body" source="BodySource2"></Region>
             <!-- 场景三：替换相同type属性的Region标题，将是单列标题的输出 -->
             <!--<Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:"
+                  headerBodyMapping="Organization:"
                   colSpannable="true" rowSpannable="false"></Region>-->
             <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:"
+                  headerBodyMapping="Organization:"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"
@@ -250,11 +250,11 @@
             <Region type="body" source="BodySource3"></Region>
             <!-- 场景三：替换相同type属性的Region标题，将是单行标题的输出 -->
             <!--<Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:"                  
+                  headerBodyMapping="BizCategory:"                  
                   basedSource="true"></Region>
             <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>-->
             <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:"
+                  headerBodyMapping="BizCategory:"
                   treeSource="ColumnTreeSource.Category"
                   treeInnerMapping="Category:ParentCategory"
                   headerTreeMapping="BizCategory:Category"
@@ -264,13 +264,13 @@
           </HeaderTable>
         </Tables>
       </Sheet>
-      <!-- 场景四：与场景三不同在于headerBodyMaping映射方式 -->
+      <!-- 场景四：与场景三不同在于headerBodyMapping映射方式 -->
       <Sheet name="Sheet3">
         <Tables>
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource4"></Region>
             <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:OrgName"
+                  headerBodyMapping="Organization:OrgName"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"

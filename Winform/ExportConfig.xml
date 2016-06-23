@@ -312,20 +312,26 @@
         <Tables>
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource.Description" emptyFill="-"></Region>
-            <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:Organization"
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMapping="Organization:Organization"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"
                   colSpannable="true" rowSpannable="false"
                   basedSource="true"></Region>
             <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:BusinessCategory"
+                  headerBodyMapping="BizCategory:BusinessCategory"
                   treeSource="ColumnTreeSource.Category"
                   treeInnerMapping="Category:ParentCategory"
                   headerTreeMapping="BizCategory:Category"
                   colSpannable="false" rowSpannable="true"
-                  basedSource="true"></Region>
+                  basedSource="true"></Region>-->
+            <Region type="rowheader" source="RowTreeSource.Org"
+                  headerBodyMapping="Org:Organization"
+                  innerMapping="Org:ParentOrg"></Region>
+            <Region type="columnheader" source="ColumnTreeSource.Category"
+                  headerBodyMapping="Category:BusinessCategory"
+                  innerMapping="Category:ParentCategory"></Region>
             <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
           </HeaderTable>
         </Tables>
@@ -335,14 +341,17 @@
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource2"></Region>
             <!--<Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:"
+                  headerBodyMapping="Organization:"
                   colSpannable="true" rowSpannable="false"></Region>-->
-            <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:"
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMapping="Organization:"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"
-                  colSpannable="true" rowSpannable="false"></Region>
+                  colSpannable="true" rowSpannable="false"></Region>-->
+            <Region type="rowheader" source="RowTreeSource.Org"
+                  headerBodyMapping="Org:"
+                  innerMapping="Org:ParentOrg"></Region>
           </HeaderTable>
         </Tables>
       </Sheet>
@@ -351,17 +360,20 @@
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource3"></Region>
             <!--<Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:"                  
+                  headerBodyMapping="BizCategory:"                  
                   basedSource="true"></Region>
             <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>-->
-            <Region type="columnheader" source="ColumnHeaderSource.BizCategory"
-                  headerBodyMaping="BizCategory:"
+            <!--<Region type="columnheader" source="ColumnHeaderSource.BizCategory"
+                  headerBodyMapping="BizCategory:"
                   treeSource="ColumnTreeSource.Category"
                   treeInnerMapping="Category:ParentCategory"
                   headerTreeMapping="BizCategory:Category"
                   colSpannable="false" rowSpannable="true"
                   basedSource="true"></Region>
-            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>
+            <Region type="corner" source="LeftUpperSource.Name" spanRule="column"></Region>-->
+            <Region type="columnheader" source="ColumnTreeSource.Category"
+                  headerBodyMapping="Category:"
+                  innerMapping="Category:ParentCategory"></Region>
           </HeaderTable>
         </Tables>
       </Sheet>
@@ -370,14 +382,17 @@
           <HeaderTable location="B3" freeze="true">
             <Region type="body" source="BodySource4"></Region>
             <!--<Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:"
+                  headerBodyMapping="Organization:"
                   colSpannable="true" rowSpannable="false"></Region>-->
-            <Region type="rowheader" source="RowHeaderSource.Organization"
-                  headerBodyMaping="Organization:OrgName"
+            <!--<Region type="rowheader" source="RowHeaderSource.Organization"
+                  headerBodyMapping="Organization:OrgName"
                   treeSource="RowTreeSource.Org"
                   treeInnerMapping="Org:ParentOrg"
                   headerTreeMapping="Organization:Org"
-                  colSpannable="true" rowSpannable="false"></Region>
+                  colSpannable="true" rowSpannable="false"></Region>-->
+            <Region type="rowheader" source="RowTreeSource.Org"
+                  headerBodyMapping="Org:OrgName"
+                  innerMapping="Org:ParentOrg"></Region>
           </HeaderTable>
         </Tables>
       </Sheet>
@@ -397,7 +412,7 @@
     <Sheets>
       <Sheet name="Sheet1">
         <Cells>
-          <Cell location="C6" source="Cells.OrgChart"/>
+          <Cell location="C6" source="Cells.OrgChart" fill="scale"/>
         </Cells>
         <Tables>
           <Table location="F6" source="OrganizationInfo" fields="PostName,PostReq,PostReqDescription,Remark" autoFitHeight="true">

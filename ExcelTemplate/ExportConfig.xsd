@@ -105,9 +105,8 @@
                   <xs:attribute name="type" type="region" use="required" />
                   <xs:attribute name="source" type="xs:string" use="required" />
                   <xs:attribute name="emptyFill" type="xs:string" />
-                  <xs:attribute name="headerBodyMaping" type="xs:string" />
-                  <xs:attribute name="treeSource" type="xs:string" />
-                  <xs:attribute name="treeInnerMapping" type="xs:string" />
+                  <xs:attribute name="headerBodyMapping" type="xs:string" />
+                  <xs:attribute name="innerMapping" type="xs:string" />
                   <xs:attribute name="headerTreeMapping" type="xs:string" />
                   <xs:attribute name="maxLevel"  type="xs:integer" />
                   <xs:attribute name="colSpannable" type="xs:boolean" />

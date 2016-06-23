@@ -327,19 +327,19 @@ namespace ExportTemplate.Export
             dt.Rows.Add("根据实际需求，制作采购单", "销售顾问", "验收入库流程");
             dataSet.Tables.Add(dt);
 
-            dt = new DataTable("RowHeaderSource");
-            dt.Columns.Add("Organization");
+            //dt = new DataTable("RowHeaderSource");
+            //dt.Columns.Add("Organization");
             List<string> rowHeader = new List<string>() { 
                 "销售部经理", "销售顾问", "进口车销售专员", "整车仓库管理员", "牌证员", "二网销售主管", 
                 "大客户专员", "展厅主管", "试乘试驾专员", "财务主管", "收银员", "销售管理科员", 
                 "销售计划科员", "大宗客户科员", "车辆业务科员", "大区督导", "应收科员", "应付科员", 
                 "启辰销售科员", "进口车销售科员", "RowHeaderTest"
             };
-            for (int i = 0; i < rowHeader.Count; i++)
-            {
-                dt.Rows.Add(rowHeader[i]);
-            }
-            dataSet.Tables.Add(dt);
+            //for (int i = 0; i < rowHeader.Count; i++)
+            //{
+            //    dt.Rows.Add(rowHeader[i]);
+            //}
+            //dataSet.Tables.Add(dt);
 
             dt = new DataTable("RowTreeSource");
             dt.Columns.Add("Org");
@@ -353,18 +353,18 @@ namespace ExportTemplate.Export
             dt.Rows.Add("业务说明", null);
             dataSet.Tables.Add(dt);
 
-            dt = new DataTable("ColumnHeaderSource");
-            dt.Columns.Add("BizCategory");
+            //dt = new DataTable("ColumnHeaderSource");
+            //dt.Columns.Add("BizCategory");
             List<string> colHeader4 = new List<string>() { 
                 "采购需求计划","一般采购分配流程","订单余量转采购分配流程","订单生产车型采购分配流程",
                 "大宗采购分配流程","特殊采购分配流程","进口车采购分配流程","物流运输流程","DFDLC二次转库流程","搬入地变更流程",
                 "验收入库流程","专营店库存管理1","主机厂库存管理1","ColumnTest"
             };
-            for (int i = 0; i < colHeader4.Count; i++)
-            {
-                dt.Rows.Add(colHeader4[i]);
-            }
-            dataSet.Tables.Add(dt);
+            //for (int i = 0; i < colHeader4.Count; i++)
+            //{
+            //    dt.Rows.Add(colHeader4[i]);
+            //}
+            //dataSet.Tables.Add(dt);
 
             dt = new DataTable("ColumnTreeSource");
             dt.Columns.Add("Category");
