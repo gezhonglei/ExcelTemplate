@@ -44,7 +44,7 @@ namespace Winform
             this.Enabled = false;
             int index = cmbProductType.SelectedIndex;
             //LY.BM.Studio.Comm.Export.ExportTest.Test2(cmbProductType.SelectedItem.ToString(), txtFileName.Text);
-            ExportTest.Test2(comboValue.Keys.ToArray()[index], txtFileName.Text);
+            ExportTest.Export(comboValue.Keys.ToArray()[index], txtFileName.Text);
             this.Enabled = true;
         }
 

@@ -1,8 +1,96 @@
 <?xml version="1.0"?>
 <ExportConfig xmlns="http://tempuri.org/schema.xsd">
-  <ExportProduct name="Template" description="测试模板" template="ExcelTemplate\Template.xlsx" export="..\ExcelTemplate\test.xlsx">
+  <ExportProduct name="BasicFunction" description="基础功能" template="ExcelTemplate\Template_BasicFunction.xlsx" export="..\ExcelTemplate\test.xlsx">
     <!--  
-      DataSetName = Form
+      DataSetName = Template_BasicFunction
+      (1) TableName = Cells
+          流程图     标题
+          FlowChart  Title
+          byte[]
+      (2) TableName = NodeInfo
+          结点名称   组织名称  业务分类
+          NodeName  OrgName   BizCategory
+      (3) TableName = OrganizationInfo
+          岗位名称   职责      职责详细描述         备注
+          PostName  PostReq   PostReqDescription  Remark
+      (4) TableName = ReportRule
+          报表名称     报表数据项  数据格式  是否查询   来源单据  来源数据项   算法      备注
+          ReportName   Item        DataType  Query     Source   SourceItem  Algorithm Remark
+    -->
+    <!-- 数据源定义 -->
+    <DataSource name="dsname">
+      <DataList name="CheckSource" value="√,"/>
+      <DataList name="DataTypeSource" value="文本,数字,日期"/>
+    </DataSource>
+    <Sheets>
+      <Sheet name="Sheet1">
+        <Cells>
+          <!-- 不指定index属性，默认取Cell表的第一行数据 -->
+          <Cell location="B2" source="Cells.Title"/>
+          <Cell location="F5" source="Cells.FlowChart" index="0" fill="stretch" />
+        </Cells>
+        <Tables>
+          <Table location="C5" source="NodeInfo" fields="BizCategory,OrgName,NodeName">
+          </Table>
+        </Tables>
+      </Sheet>
+      <Sheet name="Sheet2">
+        <Cells>
+          <Cell location="B2" source="Cells.Title"/>
+          <Cell location="C5" source="Cells.FlowChart" index="0" fill="scale" />
+        </Cells>
+        <Tables>
+          <Table location="F5" source="NodeInfo" fields="BizCategory,OrgName,NodeName">
+          </Table>
+        </Tables>
+      </Sheet>
+      <Sheet name="Sheet3">
+        <Cells>
+          <Cell location="B2" source="Cells.Title"/>
+          <Cell location="B5" source="Cells.FlowChart" index="0" fill="stretch" />
+        </Cells>
+        <Tables>
+          <Table location="B9" source="NodeInfo" fields="NodeName,BizCategory,OrgName">
+          </Table>
+        </Tables>
+      </Sheet>
+      <!-- 自适应高度 -->
+      <Sheet name="AutoHeight">
+        <Cells>
+          <Cell location="C6" source="Cells.FlowChart" index="1" fill="scale"/>
+        </Cells>
+        <Tables>
+          <Table location="F6" source="OrganizationInfo" fields="PostName,PostReq,PostReqDescription,Remark" autoFitHeight="true">
+          </Table>
+        </Tables>
+      </Sheet>
+      <!-- 不规则 -->
+      <Sheet name="列合并的数据表输出">
+        <!-- 主数据项: TableName="Cells" -->
+        <Cells>
+          <Cell location="B2" source="Cells.Title" index="2"/>
+          <Cell location="B5" source="Cells.FlowChart" index="2" fill="stretch" />
+        </Cells>
+        <!-- 子数据项：TableName自定义 -->
+        <Tables>
+          <Table location="B29" source="ReportRule">
+            <RowNum />
+            <Field name="ReportName" colspan="3" spannable="true"></Field>
+            <Field name="Item" colspan="6"></Field>
+            <Field name="DataType" colspan="3" dropDownListSource="DataTypeSource"></Field>
+            <Field name="Query" colspan="2" dropDownListSource="CheckSource"></Field>
+            <Field name="Source" colspan="5" ></Field>
+            <Field name="SourceItem" colspan="4" ></Field>
+            <Field name="Algorithm" colspan="8" ></Field>
+            <Field name="Remark" colspan="6" ></Field>
+          </Table>
+        </Tables>
+      </Sheet>
+    </Sheets>
+  </ExportProduct>
+  <ExportProduct name="MultiFunction" description="综合功能(动态区域)" template="ExcelTemplate\Template_MultiFunction.xlsx" export="..\ExcelTemplate\test.xlsx">
+    <!--  
+      DataSetName = MultiFunction
       (1) TableName = Cells 单行数据
           标题    单据样式（图片） 单据名称   单据编码  备注    约束说明
           Title   FormStyle      FormName   FormCode Remark  Constrain 
@@ -30,7 +118,8 @@
       <TableSource name="FromRule" fields="Category1,Category2,Item,Save,Way,Source,Rule,Algorithm"></TableSource>
     </DataSource>
     <Sheets>
-      <Sheet name="来店登记">
+      <!-- 根据数据更改模板Sheet的名称 -->
+      <Sheet name="Sheet1" nameRule="{Cells.Title}">
         <!-- 主数据项: TableName="Cells" -->
         <Cells>
           <Cell location="B2" source="Cells.Title" index="0"/>
@@ -43,6 +132,7 @@
         </Cells>
         <!-- 子数据项：TableName自定义 -->
         <Tables>
+          <!-- 列合并(根据数据源相邻原则填充) -->
           <Table location="B23" source="FromRule">
             <RowNum name="RowNum"></RowNum>
             <Field name="Category1" colIndex="2" spannable="true"></Field>
@@ -55,6 +145,7 @@
             <Field name="Rule" colIndex="10" emptyFill="-"></Field>
             <Field name="Algorithm" colIndex="13" emptyFill="-"></Field>
           </Table>
+          <!-- 列不连续时，指定行合并 -->
           <Table location="B26" source="FromRule" rowNumIndex="1" groupLevel="2" groupNumShow="false,false">
             <Field name="Category1"></Field>
             <Field name="Category2"></Field>
@@ -66,12 +157,6 @@
             <Field name="Rule" colspan="3"></Field>
             <Field name="Algorithm" colspan="2"></Field>
           </Table>
-          <!--<Table location="B30" source="SDPChange" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
-            <Field name="Length" type="Numeric"></Field>
-            <Field name="IsKey" type="Boolean"></Field>
-            <Field name="Required" type="Boolean"></Field>
-            <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
-          </Table>-->
         </Tables>
         <!-- 暂不支持与动态Sheet的兼容 -->
         <DynamicAreas>
@@ -97,93 +182,10 @@
       </Sheet>
     </Sheets>
   </ExportProduct>
-  <ExportProduct name="Form" description="表单" template="ExcelTemplate\Template_Form.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = Form
-      (1) TableName = Cells 单行数据
-          标题    单据样式（图片） 单据名称   单据编码  备注    约束说明
-          Title   FormStyle      FormName   FormCode Remark  Constrain 
-                  byte[]
-      (2) TableName = FromRule
-          大类        小类        单据数据项  是否保存  方式   来源单据   规则    算法
-          Category1   Category2  Item        Save     Way    Source    Rule    Algorithm
-      (3) TableName = SDPChange
-          列名称   列编码  类型     长度    键    必填    约束      备注     修改类型
-          ColName ColCode DataType Length IsKey Require Constrain Remark  ChangeType
-                                   int    bool  bool
-    -->
-    <!-- 数据源定义 -->
-    <DataSource name="dsname">
-      <DataList name="SaveSource" value="√,"/>
-      <DataList name="WaySource" value="手工录入,自动产生,列表/弹出框选择"/>
-      <DataList name="Boolean" value="是,否"/>
-      <DataList name="DataRule" value="取,录,计算"/>
-      <DataList name="ChangeTypeSource" value="新增,修改,删除"/>
-      <TableSource name="Cells"/>
-      <TableSource name="SDPChange"/>
-      <TableSource name="FromRule" fields="Category1,Category2,Item,Save,Way,Source,Rule,Algorithm"></TableSource>
-    </DataSource>
-    <Sheets>
-      <Sheet name="1、来店登记" nameRule="{Cells.Title}">
-        <!-- 主数据项: TableName="Cells" -->
-        <Cells>
-          <Cell location="B2" source="Cells.Title" index="0"/>
-          <Cell location="C5:M18" source="Cells.FormStyle"  fill="stretch" />
-          <!--0是默认值-->
-          <!--<Cell location="C27" source="Cells.FormName" valueAppend="true" />
-          <Cell location="E27" source="Cells.FormCode" valueAppend="true" />
-          <Cell location="I27" source="Cells.Remark" valueAppend="true" />
-          <Cell location="C28" source="Cells.Constrain" valueAppend="true" />-->
-        </Cells>
-        <!-- 子数据项：TableName自定义 -->
-        <Tables>
-          <Table location="B23" source="FromRule">
-            <RowNum name="RowNum"></RowNum>
-            <Field name="Category1" colIndex="2" spannable="true"></Field>
-            <Field name="Category2" colIndex="3" spannable="true"></Field>
-            <Field name="Item" colIndex="4"  annnotationField="LinkAddr"
-                   refField="LinkAddr" linkType="auto"></Field>
-            <Field name="Save" colIndex="6" dropDownListSource="SaveSource"></Field>
-            <Field name="Way" colIndex="7" dropDownListSource="WaySource"></Field>
-            <Field name="Source" colIndex="8" ></Field>
-            <Field name="Rule" colIndex="10" ></Field>
-            <Field name="Algorithm" colIndex="13" ></Field>
-          </Table>
-          <!--<Table location="B30" source="SDPChange" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
-            <Field name="Length" type="numeric"></Field>
-            <Field name="IsKey" type="boolean"></Field>
-            <Field name="Required" type="boolean"></Field>
-            <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
-          </Table>-->
-        </Tables>
-        <!-- 暂不支持与动态Sheet的兼容 -->
-        <DynamicAreas>
-          <!-- location必须是区域，不能只提供位置 -->
-          <DynamicArea location="B26:N30" source="BillList">
-            <Cells>
-              <!-- Cell必须在DynamicArea范围内,超出范围将被忽略 -->
-              <Cell location="C27" value="{FormName}" valueAppend="true" />
-              <Cell location="E27" value="{FormCode}" valueAppend="true" />
-              <Cell location="I27" value="{Remark}" valueAppend="true" />
-              <Cell location="C28" value="{Constrain}" valueAppend="true" />
-            </Cells>
-            <Tables>
-              <Table location="B30" source="{TableName}" rowNumIndex="1" fields="ColName,ColCode,DataType,Length,IsKey,Required,Constrain,Remark,ChangeType">
-                <Field name="Length" type="numeric"></Field>
-                <Field name="IsKey" type="boolean"></Field>
-                <Field name="Required" type="boolean"></Field>
-                <Field name="ChangeType" dropDownListSource="ChangeTypeSource"></Field>
-              </Table>
-            </Tables>
-          </DynamicArea>
-        </DynamicAreas>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="FunctionList" description="功能清单" template="ExcelTemplate\Template_FunctionList.xlsx">
+  <ExportProduct name="DynamicSheet" description="动态Sheet" template="ExcelTemplate\Template_DynamicSheet.xlsx">
     <!--shrinkSheet="true" shrinkExSheets="封面,目录"-->
     <!--  
-      DataSetName = FunctionList
+      DataSetName = DynamicSheet
       (1) TableName = ModuleFuncListSource
           模块   子模块     功能编码   功能名称  类别      功能说明      使用组织  应用配置     报表配置      备注
           Module SubModule  FuncCode  FuncName FuncType  Description  UseOrg    AppConfig   ReptConfig    Remark
@@ -256,36 +258,10 @@
         </Tables>
       </Sheet>
     </Sheets>
-  </ExportProduct>
-  <ExportProduct name="BusinessMainFlow" description="业务主流程" template="ExcelTemplate\Template_BusinessMainFlow.xlsx" export="..\ExcelTemplate\test.xlsx">
+  </ExportProduct>  
+  <ExportProduct name="MultiHeaders" description="动态行列多级标题" template="ExcelTemplate\Template_MultiHeaders.xlsx" export="..\ExcelTemplate\test.xlsx">
     <!--  
-      DataSetName = BusinessMainFlow
-      (1) TableName = Cells
-          流程图
-          FlowChart
-          byte[]
-      (2) TableName = NodeInfo
-          结点名称   组织名称  业务分类
-          NodeName  OrgName   BizCategory
-    -->
-    <!-- 数据源定义 -->
-    <DataSource name="dsname">
-    </DataSource>
-    <Sheets>
-      <Sheet name="Sheet1">
-        <Cells>
-          <Cell location="E5" source="Cells.FlowChart" index="0" fill="stretch" />
-        </Cells>
-        <Tables>
-          <Table location="B5" source="NodeInfo" fields="BizCategory,OrgName,NodeName">
-          </Table>
-        </Tables>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="BusinessCategory" description="业务分类" template="ExcelTemplate\Template_BusinessCategory.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = BusinessMainFlow
+      DataSetName = MultiHeaders
       (1) TableName = BodySource
           组织名称   业务分类           业务说明
           OrgId     BizCategoryId      Description
@@ -394,68 +370,6 @@
                   headerBodyMapping="Org:OrgName"
                   innerMapping="Org:ParentOrg"></Region>
           </HeaderTable>
-        </Tables>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="Organization" description="组织结构" template="ExcelTemplate\Template_Organization.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = Organization
-      (1) TableName = Cells
-          组织结构图
-          OrgChart
-          byte[]
-      (2) TableName = OrganizationInfo
-          岗位名称   职责      职责详细描述         备注
-          PostName  PostReq   PostReqDescription  Remark
-    -->
-    <Sheets>
-      <Sheet name="Sheet1">
-        <Cells>
-          <Cell location="C6" source="Cells.OrgChart" fill="scale"/>
-        </Cells>
-        <Tables>
-          <Table location="F6" source="OrganizationInfo" fields="PostName,PostReq,PostReqDescription,Remark" autoFitHeight="true">
-          </Table>
-        </Tables>
-      </Sheet>
-    </Sheets>
-  </ExportProduct>
-  <ExportProduct name="Report" description="报表" template="ExcelTemplate\Template_Report.xlsx" export="..\ExcelTemplate\test.xlsx">
-    <!--  
-      DataSetName = Report
-      (1) TableName = Cells 单行数据
-          标题    单据样式（图片） 
-          Title   ReportStyle     
-                  byte[]
-      (2) TableName = ReportRule
-          报表名称     报表数据项  数据格式  是否查询   来源单据  来源数据项   算法      备注
-          ReportName   Item        DataType  Query     Source   SourceItem  Algorithm Remark
-    -->
-    <DataSource name="dsname">
-      <DataList name="CheckSource" value="√,"/>
-      <DataList name="DataTypeSource" value="文本,数字,日期"/>
-    </DataSource>
-    <Sheets>
-      <Sheet name="1.1 标准来店量分日统计报表">
-        <!-- 主数据项: TableName="Cells" -->
-        <Cells>
-          <Cell location="B2" source="Cells.Title"/>
-          <Cell location="B5:AK25" source="Cells.ReportStyle" />
-        </Cells>
-        <!-- 子数据项：TableName自定义 -->
-        <Tables>
-          <Table location="B29" source="ReportRule">
-            <RowNum />
-            <Field name="ReportName" colspan="3" spannable="true"></Field>
-            <Field name="Item" colspan="6"></Field>
-            <Field name="DataType" colspan="3" dropDownListSource="DataTypeSource"></Field>
-            <Field name="Query" colspan="2" dropDownListSource="CheckSource"></Field>
-            <Field name="Source" colspan="5" ></Field>
-            <Field name="SourceItem" colspan="4" ></Field>
-            <Field name="Algorithm" colspan="8" ></Field>
-            <Field name="Remark" colspan="6" ></Field>
-          </Table>
         </Tables>
       </Sheet>
     </Sheets>

@@ -89,7 +89,6 @@
     <Compile Include="Export\Entity\Source.cs" />
     <Compile Include="Export\Entity\Table.cs" />
     <Compile Include="Export\ExportMain.cs" />
-    <Compile Include="Export\ExportTest.cs" />
     <Compile Include="Export\Util\MyExtention.cs" />
     <Compile Include="Export\Util\NPOIExcelUtil.cs" />
     <Compile Include="Export\Util\ParseUtil.cs" />

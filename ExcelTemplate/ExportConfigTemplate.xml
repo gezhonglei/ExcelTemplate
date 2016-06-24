@@ -78,6 +78,7 @@
             index(可选，默认值0) 数据项来自数据源哪一行，默认取第一行
             valueAppend(可选，默认false) 是否在单元格值后缀加指定的数据项
             value(可选) 用模板方式输出：从动态Sheet数据源中取某字段值，字段名用大括号"{fieldname}"
+            fill        包括origin、scale、stretch三种值，分别表示按原始大小、按比例填充、全填充。如果location指定区域，后两种以指定区域填充；如location只指定位置，后两种以指定位置的Excel模板的合并区域为准。
           -->
           <Cell location="[A1] | [A1:C4]" source="[tablename.fieldname]" index="0" valueAppend="true" value="XXX_{fieldname}_XXX" />
         </Cells>
@@ -182,15 +183,14 @@
             <!--
               type 包含body/rowheader/columnheader/corner四种值，分别表示Body区域、列标题、行标题、左上角区域等四个区域
               source 标题数据源名称，可指定输出字段名(Source.Field)。
+              innerMapping 多级标题时，数据源构成树结构的内部对应关系（Id:ParentId）,字段之间以"."分隔
               emptyFill 无数据单元格的填充字符
               【多级标题属性】
               headerBodyMapping 标题区域与Body区域的映射对应关系。有两种配置方式“<headerField>:<bodyField>”与“<headerField>:”
                   前者是正常的数据源之间指定字段的值映射
                   后者是，用header数据源的<headerField>字段值与body数据源的字段名映射
-              treeSource 多级标题数据源及输出字段，数据源名称与字段以"."分隔
-              treeInnerMapping 多级标题数据源构成树结构的内部对应关系,字段之间以"."分隔
-              headerTreeMapping 标题数据源与多级标题数据源的对应关系，字段之间以"."分隔
               maxLevel 限制多级标题的层级
+              <以下三个属性无意义暂保留>
               colSpannable 多级标题需要行合并，默认值true
               rowSpannable 多级标题需要列合并, 默认值true
               baseSource(暂不考虑) 是否基于标题数据源生成（否则以Body的数据源生成）
@@ -199,11 +199,8 @@
             -->
             <Region type="body" source="BodySource" emptyFill="-"></Region>
             <Region type="rowheader|columnheader" 
-                  source="[HeaderSource.Id|HeaderSource.Conent]"
-                  headerBodyMapping="[HeaderSource.Field]:[BodySource.FKey]"
-                  treeSource="TreeSource.Conent"
-                  treeInnerMapping="[ID]:[ParentID]"
-                  headerTreeMapping="[HeaderSource.Id]:[TreeSource.ID]"
+                  source="[HeaderSource.Id|HeaderSource.Conent]" innerMapping="[ID]:[ParentID]"
+                  headerBodyMapping="[HeaderSource.Field]:[BodySource.FKey]"                  
                   maxLevel="3"
                   colSpannable="true" rowSpannable="true"
                   basedSource="true"></Region>

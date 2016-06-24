@@ -6,10 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using NPOI.HSSF.UserModel;
-using NPOI.SS.UserModel;
-using NPOI.SS.Util;
-using NPOI.XSSF.UserModel;
 using ExportTemplate.Export;
 using ExportTemplate.Export.Entity;
 using ExportTemplate.Export.Writer;
@@ -31,56 +27,112 @@ namespace ExportTemplate.Export
     public class ExportTest
     {
         static string path = AppDomain.CurrentDomain.BaseDirectory;
-        //public static void Test(string exportfile, string productTypeName)
-        //{
-        //    productTypeName = !string.IsNullOrEmpty(productTypeName) ? productTypeName : "Template";
-        //    DataSet dataSet = GetDataSet(productTypeName);//GetTestData(path);
-        //    dataSet.DataSetName = productTypeName;
-        //    ExportRuleConfig config = ExportRuleConfig.NewInstance(Path.Combine(path, "ExcelTemplate\\ExportConfig.xml"));
-        //    config.BasePath = path;
-        //    ProductRule prodType = config.GetProductRule(dataSet.DataSetName);
 
-        //    if (!string.IsNullOrEmpty(exportfile))
-        //    {
-        //        string name = prodType.Template;
-        //        prodType.Template = name.Replace(new FileInfo(name).Extension, new FileInfo(exportfile).Extension);
-        //    }
-
-        //    string templatefile = Path.Combine(path, prodType.Template);
-        //    exportfile = string.IsNullOrEmpty(exportfile) ? Path.Combine(path, "test" + new FileInfo(templatefile).Extension) : exportfile;
-        //    NPOIExcelProduct product = new NPOIExcelProduct(prodType, dataSet);
-        //    product.Export(exportfile);
-        //}
-
-        public static void Test2(string productTypeName, string exportfile)
+        public static void Export(string productTypeName, string exportfile)
         {
             DataSet dataSet = GetDataSet(productTypeName);
             dataSet.DataSetName = productTypeName;
             ExportMain.Export(dataSet, exportfile);
         }
 
-        private static DataSet GetDataSet(string type)
+        private static DataSet GetBasicFunction()
         {
-            if (type == "FunctionList")
-                return GetFunctionList();
-            else if (type == "BusinessMainFlow")
-                return GetBusinessMainFlow();
-            else if (type == "BusinessCategory")
-                return GetBusinessCategory();
-            else if (type == "Organization")
-                return GetOrganization();
-            else if (type == "Report")
-                return GetReport();
-            else if (type == "3ConfigReq")
-                return Get3ConfigReq();
-            else if (type == "4Line3Config")
-                return Get4Line3Config();
-            return GetTestData();
+            DataSet dataSet = new DataSet("BasicFunction");
+            DataTable dt = new DataTable("Cells");
+            dt.Columns.Add("FlowChart", typeof(byte[]));
+            dt.Columns.Add("Title");
+            using (FileStream filestream = new FileStream(Path.Combine(path, "ExcelTemplate\\FormStyle.jpg"), FileMode.Open, FileAccess.Read))
+            {
+                byte[] bytes = new byte[(int)filestream.Length];
+                filestream.Read(bytes, 0, bytes.Length);
+                dt.Rows.Add(bytes, "流程图数据列表");
+            }
+            using (FileStream filestream = new FileStream(Path.Combine(path, "ExcelTemplate\\ReportStyle.bmp"), FileMode.Open, FileAccess.Read))
+            {
+                byte[] bytes = new byte[(int)filestream.Length];
+                filestream.Read(bytes, 0, bytes.Length);
+                dt.Rows.Add(bytes, "组织数据列表");
+                dt.Rows.Add(bytes, "报表数据");
+            }
+            dataSet.Tables.Add(dt);
+
+            dt = new DataTable("NodeInfo");
+            dt.Columns.Add("NodeName");
+            dt.Columns.Add("OrgName");
+            dt.Columns.Add("BizCategory");
+            dt.Rows.Add("需求计划", "主机厂专营店物流", "整车采购");
+            dt.Rows.Add("采购管理", "主机厂专营店物流", "整车采购");
+            dt.Rows.Add("采购物流", "主机厂专营店物流", "整车采购");
+            dt.Rows.Add("整车销退", "主机厂专营店", "整车销退");
+            dt.Rows.Add("主机厂财务", "主机厂专营店", "整车财务");
+            dt.Rows.Add("专营店财务", "主机厂专营店", "整车财务");
+            dataSet.Tables.Add(dt);
+
+            dt = new DataTable("OrganizationInfo");
+            dt.Columns.Add("PostName");
+            dt.Columns.Add("PostReq");
+            dt.Columns.Add("PostReqDescription");
+            dt.Columns.Add("Remark");
+            dt.Rows.Add("销售经理", "完成销售目标", "1、制定销售计划aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("销售顾问", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("进口车销售专员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("整车仓库管理员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("牌证员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("二网销售主管", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("大客户专员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dt.Rows.Add("展厅主管", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
+            dataSet.Tables.Add(dt);
+
+            dt = new DataTable("ReportRule");
+            dt.Columns.Add("ReportName");
+            dt.Columns.Add("Item");
+            dt.Columns.Add("DataType");
+            dt.Columns.Add("Query");
+            dt.Columns.Add("Source");
+            dt.Columns.Add("SourceItem");
+            dt.Columns.Add("Algorithm");
+            dt.Columns.Add("Remark");
+            dt.Rows.Add("来店统计表-来店看板", "网点名称", "文本", "√", "来店登记", "网点ID", "", "");
+            dt.Rows.Add("来店统计表-来店看板", "统计开始日期", "日期", "√", "", "", "", "");
+            dt.Rows.Add("来店统计表-来店看板", "统计结束日期", "日期", "√", "", "", "", "");
+            dt.Rows.Add("来店统计表-来店看板", "销售顾问", "文本", "", "来店登记", "销售顾问ID", "", "");
+            dt.Rows.Add("来店统计表-来店看板", "日期", "日期", "", "来店登记", "登记日期", "", "");
+            dt.Rows.Add("来店统计表-来店看板", "合计", "数字", "", "", "网点ID", "=Σ来店数合计", "");
+            dt.Rows.Add("来店统计表-来店看板", "留资料", "数字", "", "", "网点ID", "=Σ有效来店数合计", "");
+            dt.Rows.Add("来店统计表-来店看板", "留档率真", "数字", "", "", "网点ID", "=留资料/合计", "");
+            dt.Rows.Add("Text", "留档率真", "数字", "", "", "网点ID", "=留资料/合计", "");
+            dataSet.Tables.Add(dt);
+
+            return dataSet;
         }
 
-        private static DataSet GetTestData()
+        private static DataSet GetDataSet(string type)
         {
-            DataSet dataSet = new DataSet("Form");
+            DataSet ds = null;
+            switch (type)
+            {
+                case "BasicFunction":
+                    ds = GetBasicFunction();
+                    break;
+                case "MultiFunction":
+                    ds = GetDataMultiFunction();
+                    break;
+                case "DynamicSheet":
+                    ds = GetDataDynamicSheet();
+                    break;
+                case "MultiHeaders":
+                    ds = GetDataMultiHeaders();
+                    break;
+                default:
+                    ds = GetDataMultiFunction();
+                    break;
+            }
+            return ds;
+        }
+
+        private static DataSet GetDataMultiFunction()
+        {
+            DataSet dataSet = new DataSet("MultiFunction");
             DataTable dt = new DataTable("Cells");
             dt.Columns.Add("Title");
             dt.Columns.Add("FormName");
@@ -197,9 +249,9 @@ namespace ExportTemplate.Export
             return dataSet;
         }
 
-        private static DataSet GetFunctionList()
+        private static DataSet GetDataDynamicSheet()
         {
-            DataSet dataSet = new DataSet("FunctionList");
+            DataSet dataSet = new DataSet("DynamicSheet");
             DataTable dt = new DataTable("ValueTypeSource");
             dt.Columns.Add("Name");
             dt.Rows.Add("文本");
@@ -286,37 +338,9 @@ namespace ExportTemplate.Export
             return dataSet;
         }
 
-        private static DataSet GetBusinessMainFlow()
+        private static DataSet GetDataMultiHeaders()
         {
-            DataSet dataSet = new DataSet("BusinessMainFlow");
-            DataTable dt = new DataTable("Cells");
-            dt.Columns.Add("FlowChart", typeof(byte[]));
-            using (FileStream filestream = new FileStream(Path.Combine(path, "ExcelTemplate\\FormStyle.jpg"), FileMode.Open, FileAccess.Read))
-            {
-                byte[] bytes = new byte[(int)filestream.Length];
-                filestream.Read(bytes, 0, bytes.Length);
-                dt.Rows.Add(bytes);
-            }
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("NodeInfo");
-            dt.Columns.Add("NodeName");
-            dt.Columns.Add("OrgName");
-            dt.Columns.Add("BizCategory");
-            dt.Rows.Add("需求计划", "主机厂专营店物流", "整车采购");
-            dt.Rows.Add("采购管理", "主机厂专营店物流", "整车采购");
-            dt.Rows.Add("采购物流", "主机厂专营店物流", "整车采购");
-            dt.Rows.Add("整车销退", "主机厂专营店", "整车销退");
-            dt.Rows.Add("主机厂财务", "主机厂专营店", "整车财务");
-            dt.Rows.Add("专营店财务", "主机厂专营店", "整车财务");
-            dataSet.Tables.Add(dt);
-
-            return dataSet;
-        }
-
-        private static DataSet GetBusinessCategory()
-        {
-            DataSet dataSet = new DataSet("BusinessCategory");
+            DataSet dataSet = new DataSet("MultiHeaders");
             DataTable dt = new DataTable("BodySource");
             dt.Columns.Add("Description");
             dt.Columns.Add("Organization");
@@ -438,151 +462,5 @@ namespace ExportTemplate.Export
             return dataSet;
         }
 
-        private static DataSet GetOrganization()
-        {
-            DataSet dataSet = new DataSet("Organization");
-            DataTable dt = new DataTable("Cells");
-            dt.Columns.Add("OrgChart", typeof(byte[]));
-            using (FileStream filestream = new FileStream(Path.Combine(path, "ExcelTemplate\\FormStyle.jpg"), FileMode.Open, FileAccess.Read))
-            {
-                byte[] bytes = new byte[(int)filestream.Length];
-                filestream.Read(bytes, 0, bytes.Length);
-                dt.Rows.Add(bytes);
-            }
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("OrganizationInfo");
-            dt.Columns.Add("PostName");
-            dt.Columns.Add("PostReq");
-            dt.Columns.Add("PostReqDescription");
-            dt.Columns.Add("Remark");
-            dt.Rows.Add("销售经理", "完成销售目标", "1、制定销售计划aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("销售顾问", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("进口车销售专员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("整车仓库管理员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("牌证员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("二网销售主管", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("大客户专员", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dt.Rows.Add("展厅主管", "完成销售目标", "1、制定销售计划\n2、定期汇报销售业绩\n3、策划销售方向", "。。。");
-            dataSet.Tables.Add(dt);
-
-            return dataSet;
-        }
-
-        private static DataSet GetReport()
-        {
-            DataSet dataSet = new DataSet("Report");
-            DataTable dt = new DataTable("Cells");
-            dt.Columns.Add("Title");
-            dt.Columns.Add("ReportStyle", typeof(byte[]));
-            dt.Rows.Add("标准来店量分日统计报表");
-            using (FileStream filestream = new FileStream(Path.Combine(path, "ExcelTemplate\\ReportStyle.bmp"), FileMode.Open, FileAccess.Read))
-            {
-                byte[] bytes = new byte[(int)filestream.Length];
-                filestream.Read(bytes, 0, bytes.Length);
-                dt.Rows[0]["ReportStyle"] = bytes;
-            }
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("ReportRule");
-            dt.Columns.Add("ReportName");
-            dt.Columns.Add("Item");
-            dt.Columns.Add("DataType");
-            dt.Columns.Add("Query");
-            dt.Columns.Add("Source");
-            dt.Columns.Add("SourceItem");
-            dt.Columns.Add("Algorithm");
-            dt.Columns.Add("Remark");
-            dt.Rows.Add("来店统计表-来店看板", "网点名称", "文本", "√", "来店登记", "网点ID", "", "");
-            dt.Rows.Add("来店统计表-来店看板", "统计开始日期", "日期", "√", "", "", "", "");
-            dt.Rows.Add("来店统计表-来店看板", "统计结束日期", "日期", "√", "", "", "", "");
-            dt.Rows.Add("来店统计表-来店看板", "销售顾问", "文本", "", "来店登记", "销售顾问ID", "", "");
-            dt.Rows.Add("来店统计表-来店看板", "日期", "日期", "", "来店登记", "登记日期", "", "");
-            dt.Rows.Add("来店统计表-来店看板", "合计", "数字", "", "", "网点ID", "=Σ来店数合计", "");
-            dt.Rows.Add("来店统计表-来店看板", "留资料", "数字", "", "", "网点ID", "=Σ有效来店数合计", "");
-            dt.Rows.Add("来店统计表-来店看板", "留档率真", "数字", "", "", "网点ID", "=留资料/合计", "");
-            dt.Rows.Add("Text", "留档率真", "数字", "", "", "网点ID", "=留资料/合计", "");
-            dataSet.Tables.Add(dt);
-
-            return dataSet;
-        }
-
-        private static DataSet Get3ConfigReq()
-        {
-            DataSet dataSet = new DataSet("3ConfigReq");
-            DataTable dt = new DataTable("AppConfigSource");
-            dt.Columns.Add("Platform");
-            dt.Columns.Add("Module");
-            dt.Columns.Add("FlowName");
-            dt.Columns.Add("ConfigReq");
-            dt.Columns.Add("BizScene");
-            dt.Columns.Add("ConfigMethod");
-            dt.Columns.Add("ConfigFunc");
-            dt.Columns.Add("EffectedFunc");
-            dt.Columns.Add("EffectedRegion");
-            dt.Columns.Add("Remark");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-", "-", "-", "-");
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("FlowConfigSource");
-            dt.Columns.Add("Platform");
-            dt.Columns.Add("Module");
-            dt.Columns.Add("FlowName");
-            dt.Columns.Add("ConfigReq");
-            dt.Columns.Add("BizScene");
-            dt.Columns.Add("ConfigMethod");
-            dt.Columns.Add("Remark");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("ReportConfigSource");
-            dt.Columns.Add("Platform");
-            dt.Columns.Add("Module");
-            dt.Columns.Add("ReportName");
-            dt.Columns.Add("Description");
-            dt.Columns.Add("ConfigReq");
-            dt.Columns.Add("ConfigMethod");
-            dt.Columns.Add("Remark");
-            dataSet.Tables.Add(dt);
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            dt.Rows.Add("-", "-", "-", "-", "-", "-", "-");
-            return dataSet;
-        }
-
-        private static DataSet Get4Line3Config()
-        {
-            DataSet dataSet = new DataSet("4Line3Config");
-            DataTable dt = new DataTable("Cells");
-            dt.Columns.Add("Title");
-            dt.Rows.Add("来店管理流程_四线三配置分析");
-            dataSet.Tables.Add(dt);
-
-            dt = new DataTable("4Line3ConfigSource");
-            string[] columns = "FlowName,WorkFlow,Node,Function,Organization,Input,Process,Rule,Output,OnOffLine,ReqBasicData,Standard,Monitor,MonitorRule,MonitorWay,UpdateRule,UpdateWay,MonitorReport,ScheduleReport,QualityReport,Rate,GeneralReport,Shared,ShareWay,SharedObject,AppConfig,FlowConfig,ReportName,ReportConfig".Split(',');
-            foreach (var column in columns)
-            {
-                dt.Columns.Add(column);
-            }
-            Random random = new Random();
-            for (int i = 0; i < 10; i++)
-            {
-                DataRow row = dt.NewRow();
-                for (int j = 0; j < dt.Columns.Count; j++)
-                {
-                    row[j] = (char)('A' + random.Next(100) % 26);
-                }
-                dt.Rows.Add(row);
-            }
-            dataSet.Tables.Add(dt);
-            return dataSet;
-        }
     }
 }

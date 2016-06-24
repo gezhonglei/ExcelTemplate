@@ -66,6 +66,7 @@
     <Compile Include="ExcelFrm.Designer.cs">
       <DependentUpon>ExcelFrm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ExportTest.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="ExcelFrm.resx">
@@ -81,46 +82,28 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="ExcelTemplate\Template_BusinessCategory.xls">
+    <None Include="ExcelTemplate\Template_MultiHeaders.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_BusinessMainFlow.xls">
+    <None Include="ExcelTemplate\Template_BasicFunction.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_Organization.xls">
+    <None Include="ExcelTemplate\Template_MultiHeaders.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_Organization.xlsx">
+    <None Include="ExcelTemplate\Template_BasicFunction.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_BusinessCategory.xlsx">
+    <None Include="ExcelTemplate\Template_DynamicSheet.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_BusinessMainFlow.xlsx">
+    <None Include="ExcelTemplate\Template_DynamicSheet.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_Form.xls">
+    <None Include="ExcelTemplate\Template_MultiFunction.xls">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ExcelTemplate\Template_Form.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_FunctionList.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_FunctionList.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_Report.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template_Report.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template.xls">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="ExcelTemplate\Template.xlsx">
+    <None Include="ExcelTemplate\Template_MultiFunction.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Properties\Settings.settings">
